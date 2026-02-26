@@ -950,6 +950,7 @@
                 let prizeName = result.prize.full || result.prize.name;
 
                 // ВАЖНО: отправляем данные в правильном формате
+                // ВАЖНО: отправляем данные в правильном формате
                 const data = {
                     type: spinType,
                     prize: {
@@ -958,20 +959,51 @@
                     }
                 };
 
-                // Отправляем в Telegram бот
-                // Получаем токен из URL
+// ПОЛУЧАЕМ ТОКЕН ИЗ URL
                 const urlParams = new URLSearchParams(window.location.search);
                 const botToken = urlParams.get('botToken');
 
-// Создаем URL для отправки
+// СОЗДАЕМ URL ДЛЯ ОТПРАВКИ
                 const apiUrl = 'https://api.telegram.org/bot' + botToken + '/sendMessage?chat_id=' + userId + '&text=' + encodeURIComponent('WHEEL_RESULT: ' + JSON.stringify(data));
 
-// Отправляем через Image (самый надежный способ)
+// ОТПРАВЛЯЕМ ЧЕРЕЗ IMAGE
                 new Image().src = apiUrl;
 
                 console.log('Data sent via Image:', apiUrl);
                 tg.showAlert('✅ Данные отправлены! Приз будет начислен...');
-                console.log('Data sent to bot:', data); // Для отладки
+
+                totalSpins++;
+                document.getElementById('totalSpins').textContent = totalSpins;
+
+                document.getElementById('prizeInfo').innerHTML = `
+    <div class="prize-info-main">🎉 ${result.prize.emoji} ${prizeName}!</div>
+    <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
+`;
+
+                if (spinType === 'free') {
+                    canSpin = false;
+                    document.getElementById('freeBadge').innerHTML = `
+        <span>🆓</span>
+        <span>Бесплатный</span>
+        <span>❌</span>
+    `;
+                    document.getElementById('freeSpins').textContent = '0';
+                } else {
+                    extraSpins--;
+                    document.getElementById('extraBadge').innerHTML = `
+        <span>✨</span>
+        <span>Доп. прокрутов</span>
+        <span>${extraSpins}</span>
+    `;
+                    document.getElementById('extraSpins').textContent = extraSpins;
+                }
+
+                saveStats();
+                updateSpinButton();
+                isSpinning = false;
+
+                // Отправляем в Telegram бот
+                // Получаем токен из URL
 
                 totalSpins++;
                 document.getElementById('totalSpins').textContent = totalSpins;
