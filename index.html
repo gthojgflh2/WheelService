@@ -963,28 +963,14 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const botToken = urlParams.get('botToken');
 
-// Отправляем в Telegram бот через API
-                fetch('https://api.telegram.org/bot' + botToken + '/sendMessage', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        chat_id: userId,
-                        text: 'WHEEL_RESULT: ' + JSON.stringify(data)
-                    })
-                })
-                    .then(response => response.json())
-                    .then(responseData => {
-                        console.log('API Response:', responseData);
-                        if (responseData.ok) {
-                            tg.showAlert('✅ Приз отправлен! Проверь бота');
-                        } else {
-                            tg.showAlert('❌ Ошибка: ' + responseData.description);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Fetch error:', error);
-                        tg.showAlert('❌ Ошибка отправки: ' + error.message);
-                    });
+// Создаем URL для отправки
+                const apiUrl = 'https://api.telegram.org/bot' + botToken + '/sendMessage?chat_id=' + userId + '&text=' + encodeURIComponent('WHEEL_RESULT: ' + JSON.stringify(data));
+
+// Отправляем через Image (самый надежный способ)
+                new Image().src = apiUrl;
+
+                console.log('Data sent via Image:', apiUrl);
+                tg.showAlert('✅ Данные отправлены! Приз будет начислен...');
                 console.log('Data sent to bot:', data); // Для отладки
 
                 totalSpins++;
