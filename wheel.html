@@ -200,229 +200,229 @@
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>🎡 Колесо фортуны</h1>
+    <div class="container">
+        <h1>🎡 Колесо фортуны</h1>
 
-    <div class="stats">
-        <div class="stat-item">
-            <div class="stat-value" id="freeSpins">0</div>
-            <div class="stat-label">Бесплатных</div>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="freeSpins">0</div>
+                <div class="stat-label">Бесплатных</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="extraSpins">0</div>
+                <div class="stat-label">Дополнительных</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="totalSpins">0</div>
+                <div class="stat-label">Всего</div>
+            </div>
         </div>
-        <div class="stat-item">
-            <div class="stat-value" id="extraSpins">0</div>
-            <div class="stat-label">Дополнительных</div>
+
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel" id="wheel"></div>
         </div>
-        <div class="stat-item">
-            <div class="stat-value" id="totalSpins">0</div>
-            <div class="stat-label">Всего</div>
+
+        <div class="prize-info" id="prizeInfo">Нажмите кнопку, чтобы крутить!</div>
+
+        <div class="spins-count">
+            <span id="freeBadge" class="free-badge">🆓 Бесплатный: ✅</span>
+            <span id="extraBadge" class="extra-badge">✨ Дополнительных: 0</span>
         </div>
+
+        <button class="spin-btn" id="spinBtn" onclick="spinWheel()">🎡 КРУТИТЬ</button>
+        <button class="back-btn" onclick="closeApp()">◀️ НАЗАД В ПРОФИЛЬ</button>
     </div>
 
-    <div class="wheel-container">
-        <div class="pointer"></div>
-        <div class="wheel" id="wheel"></div>
-    </div>
+    <script>
+        let tg = window.Telegram.WebApp;
+        let userId = null;
+        let spinType = 'free';
+        let canSpin = true;
+        let extraSpins = 0;
+        let isSpinning = false;
 
-    <div class="prize-info" id="prizeInfo">Нажмите кнопку, чтобы крутить!</div>
+        // Призы и их цвета
+        const prizes = [
+            { name: '1 час', value: 60, color: '#FF6B6B' },
+            { name: '2 часа', value: 120, color: '#4ECDC4' },
+            { name: '3 часа', value: 180, color: '#45B7D1' },
+            { name: '6 часов', value: 360, color: '#96CEB4' },
+            { name: '2 слота', value: 2, color: '#FFE194' },
+            { name: 'Лотерея', value: 1, color: '#D4A5A5' },
+            { name: '+1 прокрут', value: 1, color: '#9B59B6' },
+            { name: 'Промокод', value: 50, color: '#F1C40F' },
+            { name: '25 грн', value: 25, color: '#E67E22' },
+            { name: '50 грн', value: 50, color: '#2ECC71' }
+        ];
 
-    <div class="spins-count">
-        <span id="freeBadge" class="free-badge">🆓 Бесплатный: ✅</span>
-        <span id="extraBadge" class="extra-badge">✨ Дополнительных: 0</span>
-    </div>
+        // Настройки Telegram WebApp
+        tg.ready();
+        tg.expand();
+        tg.MainButton.hide();
 
-    <button class="spin-btn" id="spinBtn" onclick="spinWheel()">🎡 КРУТИТЬ</button>
-    <button class="back-btn" onclick="closeApp()">◀️ НАЗАД В ПРОФИЛЬ</button>
-</div>
+        // Получаем данные из URL
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            userId = params.get('user');
+            const canSpinFree = params.get('canSpin') === 'true';
+            extraSpins = parseInt(params.get('extraSpins') || '0');
 
-<script>
-    let tg = window.Telegram.WebApp;
-    let userId = null;
-    let spinType = 'free';
-    let canSpin = true;
-    let extraSpins = 0;
-    let isSpinning = false;
+            canSpin = canSpinFree;
 
-    // Призы и их цвета
-    const prizes = [
-        { name: '1 час', value: 60, color: '#FF6B6B' },
-        { name: '2 часа', value: 120, color: '#4ECDC4' },
-        { name: '3 часа', value: 180, color: '#45B7D1' },
-        { name: '6 часов', value: 360, color: '#96CEB4' },
-        { name: '2 слота', value: 2, color: '#FFE194' },
-        { name: 'Лотерея', value: 1, color: '#D4A5A5' },
-        { name: '+1 прокрут', value: 1, color: '#9B59B6' },
-        { name: 'Промокод', value: 50, color: '#F1C40F' },
-        { name: '25 грн', value: 25, color: '#E67E22' },
-        { name: '50 грн', value: 50, color: '#2ECC71' }
-    ];
+            document.getElementById('freeBadge').innerHTML = canSpinFree ?
+                '🆓 Бесплатный: ✅' : '🆓 Бесплатный: ❌';
+            document.getElementById('extraBadge').innerHTML = `✨ Дополнительных: ${extraSpins}`;
 
-    // Настройки Telegram WebApp
-    tg.ready();
-    tg.expand();
-    tg.MainButton.hide();
-
-    // Получаем данные из URL
-    function getUrlParams() {
-        const params = new URLSearchParams(window.location.search);
-        userId = params.get('user');
-        const canSpinFree = params.get('canSpin') === 'true';
-        extraSpins = parseInt(params.get('extraSpins') || '0');
-
-        canSpin = canSpinFree;
-
-        document.getElementById('freeBadge').innerHTML = canSpinFree ?
-            '🆓 Бесплатный: ✅' : '🆓 Бесплатный: ❌';
-        document.getElementById('extraBadge').innerHTML = `✨ Дополнительных: ${extraSpins}`;
-
-        updateSpinButton();
-    }
-
-    function updateSpinButton() {
-        const btn = document.getElementById('spinBtn');
-        if (canSpin) {
-            btn.innerHTML = '🎡 КРУТИТЬ БЕСПЛАТНО';
-            spinType = 'free';
-        } else if (extraSpins > 0) {
-            btn.innerHTML = `✨ КРУТИТЬ ДОП. ПРОКРУТ (${extraSpins} шт)`;
-            spinType = 'extra';
-        } else {
-            btn.innerHTML = '❌ НЕТ ПРОКРУТОВ';
-            btn.disabled = true;
+            updateSpinButton();
         }
-    }
 
-    // Создаем сегменты колеса
-    function createWheelSegments() {
-        const wheel = document.getElementById('wheel');
-        wheel.innerHTML = '';
-
-        const anglePerPrize = 360 / prizes.length;
-
-        prizes.forEach((prize, index) => {
-            const segment = document.createElement('div');
-            segment.className = 'segment';
-            segment.style.backgroundColor = prize.color;
-            segment.style.transform = `rotate(${index * anglePerPrize}deg) skewY(${90 - anglePerPrize}deg)`;
-
-            const span = document.createElement('span');
-            span.style.transform = `rotate(${anglePerPrize / 2}deg) skewY(-${90 - anglePerPrize}deg)`;
-            span.style.display = 'block';
-            span.style.width = '100%';
-            span.style.textAlign = 'center';
-            span.textContent = prize.name;
-
-            segment.appendChild(span);
-            wheel.appendChild(segment);
-        });
-    }
-
-    // Выбор случайного приза
-    function getRandomPrize() {
-        const weights = [30, 20, 15, 5, 2, 4, 8, 1, 12, 3]; // Веса соответствуют призам
-        const totalWeight = weights.reduce((a, b) => a + b, 0);
-        let random = Math.random() * totalWeight;
-
-        let sum = 0;
-        for (let i = 0; i < weights.length; i++) {
-            sum += weights[i];
-            if (random < sum) {
-                return {
-                    index: i,
-                    prize: prizes[i],
-                    rotation: 360 * 5 + (i * (360 / prizes.length)) + (360 / prizes.length / 2)
-                };
+        function updateSpinButton() {
+            const btn = document.getElementById('spinBtn');
+            if (canSpin) {
+                btn.innerHTML = '🎡 КРУТИТЬ БЕСПЛАТНО';
+                spinType = 'free';
+            } else if (extraSpins > 0) {
+                btn.innerHTML = `✨ КРУТИТЬ ДОП. ПРОКРУТ (${extraSpins} шт)`;
+                spinType = 'extra';
+            } else {
+                btn.innerHTML = '❌ НЕТ ПРОКРУТОВ';
+                btn.disabled = true;
             }
         }
-        return { index: 0, prize: prizes[0], rotation: 360 * 5 };
-    }
 
-    // Крутим колесо
-    function spinWheel() {
-        if (isSpinning) return;
+        // Создаем сегменты колеса
+        function createWheelSegments() {
+            const wheel = document.getElementById('wheel');
+            wheel.innerHTML = '';
 
-        let currentSpinType = spinType;
+            const anglePerPrize = 360 / prizes.length;
 
-        if (currentSpinType === 'free' && !canSpin) {
-            tg.showAlert('❌ Бесплатный прокрут уже использован на этой неделе!');
-            return;
+            prizes.forEach((prize, index) => {
+                const segment = document.createElement('div');
+                segment.className = 'segment';
+                segment.style.backgroundColor = prize.color;
+                segment.style.transform = `rotate(${index * anglePerPrize}deg) skewY(${90 - anglePerPrize}deg)`;
+
+                const span = document.createElement('span');
+                span.style.transform = `rotate(${anglePerPrize / 2}deg) skewY(-${90 - anglePerPrize}deg)`;
+                span.style.display = 'block';
+                span.style.width = '100%';
+                span.style.textAlign = 'center';
+                span.textContent = prize.name;
+
+                segment.appendChild(span);
+                wheel.appendChild(segment);
+            });
         }
 
-        if (currentSpinType === 'extra' && extraSpins <= 0) {
-            tg.showAlert('❌ У вас нет дополнительных прокрутов!');
-            return;
-        }
+        // Выбор случайного приза
+        function getRandomPrize() {
+            const weights = [30, 20, 15, 5, 2, 4, 8, 1, 12, 3];
+            const totalWeight = weights.reduce((a, b) => a + b, 0);
+            let random = Math.random() * totalWeight;
 
-        isSpinning = true;
-        document.getElementById('spinBtn').disabled = true;
-        document.getElementById('prizeInfo').innerHTML = '🎡 Крутим колесо...';
-
-        const result = getRandomPrize();
-        const wheel = document.getElementById('wheel');
-
-        // Анимируем вращение
-        wheel.style.transform = `rotate(${result.rotation}deg)`;
-
-        // Отправляем результат в бот
-        setTimeout(() => {
-            tg.sendData(JSON.stringify({
-                type: currentSpinType,
-                prize: {
-                    name: result.prize.name,
-                    value: result.prize.value
+            let sum = 0;
+            for (let i = 0; i < weights.length; i++) {
+                sum += weights[i];
+                if (random < sum) {
+                    return {
+                        index: i,
+                        prize: prizes[i],
+                        rotation: 360 * 5 + (i * (360 / prizes.length)) + (360 / prizes.length / 2)
+                    };
                 }
-            }));
+            }
+            return { index: 0, prize: prizes[0], rotation: 360 * 5 };
+        }
 
-            document.getElementById('prizeInfo').innerHTML = `
+        // Крутим колесо
+        function spinWheel() {
+            if (isSpinning) return;
+
+            let currentSpinType = spinType;
+
+            if (currentSpinType === 'free' && !canSpin) {
+                tg.showAlert('❌ Бесплатный прокрут уже использован на этой неделе!');
+                return;
+            }
+
+            if (currentSpinType === 'extra' && extraSpins <= 0) {
+                tg.showAlert('❌ У вас нет дополнительных прокрутов!');
+                return;
+            }
+
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+            document.getElementById('prizeInfo').innerHTML = '🎡 Крутим колесо...';
+
+            const result = getRandomPrize();
+            const wheel = document.getElementById('wheel');
+
+            // Анимируем вращение
+            wheel.style.transform = `rotate(${result.rotation}deg)`;
+
+            // Отправляем результат в бот
+            setTimeout(() => {
+                tg.sendData(JSON.stringify({
+                    type: currentSpinType,
+                    prize: {
+                        name: result.prize.name,
+                        value: result.prize.value
+                    }
+                }));
+
+                document.getElementById('prizeInfo').innerHTML = `
                     🎉 <b>${result.prize.name}!</b><br>
                     <small>${getPrizeDescription(result.prize)}</small>
                 `;
 
-            // Обновляем статистику
-            if (currentSpinType === 'free') {
-                canSpin = false;
-                document.getElementById('freeBadge').innerHTML = '🆓 Бесплатный: ❌';
-            } else {
-                extraSpins--;
-                document.getElementById('extraBadge').innerHTML = `✨ Дополнительных: ${extraSpins}`;
-            }
+                // Обновляем статистику
+                if (currentSpinType === 'free') {
+                    canSpin = false;
+                    document.getElementById('freeBadge').innerHTML = '🆓 Бесплатный: ❌';
+                } else {
+                    extraSpins--;
+                    document.getElementById('extraBadge').innerHTML = `✨ Дополнительных: ${extraSpins}`;
+                }
 
-            updateSpinButton();
+                updateSpinButton();
 
-            setTimeout(() => {
-                isSpinning = false;
-            }, 1000);
+                setTimeout(() => {
+                    isSpinning = false;
+                }, 1000);
 
-        }, 3000);
-    }
-
-    function getPrizeDescription(prize) {
-        switch(prize.name) {
-            case '1 час': return '✅ +60 минут доступа';
-            case '2 часа': return '✅ +120 минут доступа';
-            case '3 часа': return '✅ +180 минут доступа';
-            case '6 часов': return '✅ +360 минут доступа';
-            case '2 слота': return '✅ +2 слота на 2 недели';
-            case 'Лотерея': return '🎰 Бесплатная лотерея';
-            case '+1 прокрут': return '✨ +1 дополнительный прокрут';
-            case 'Промокод': return '🎟 Промокод на 50 грн';
-            case '25 грн': return '💰 +25 грн на баланс';
-            case '50 грн': return '💰 +50 грн на баланс';
-            default: return '🎁 Приз получен!';
+            }, 3000);
         }
-    }
 
-    function closeApp() {
-        tg.close();
-    }
+        function getPrizeDescription(prize) {
+            switch(prize.name) {
+                case '1 час': return '✅ +60 минут доступа';
+                case '2 часа': return '✅ +120 минут доступа';
+                case '3 часа': return '✅ +180 минут доступа';
+                case '6 часов': return '✅ +360 минут доступа';
+                case '2 слота': return '✅ +2 слота на 2 недели';
+                case 'Лотерея': return '🎰 Бесплатная лотерея';
+                case '+1 прокрут': return '✨ +1 дополнительный прокрут';
+                case 'Промокод': return '🎟 Промокод на 50 грн';
+                case '25 грн': return '💰 +25 грн на баланс';
+                case '50 грн': return '💰 +50 грн на баланс';
+                default: return '🎁 Приз получен!';
+            }
+        }
 
-    // Инициализация
-    createWheelSegments();
-    getUrlParams();
+        function closeApp() {
+            tg.close();
+        }
 
-    // Обработка данных от бота
-    tg.onEvent('mainButtonClicked', function() {
-        tg.sendData(JSON.stringify({ action: 'close' }));
-    });
-</script>
+        // Инициализация
+        createWheelSegments();
+        getUrlParams();
+
+        // Обработка данных от бота
+        tg.onEvent('mainButtonClicked', function() {
+            tg.sendData(JSON.stringify({ action: 'close' }));
+        });
+    </script>
 </body>
 </html>
