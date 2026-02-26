@@ -28,7 +28,6 @@
             overflow-x: hidden;
         }
 
-        /* Анимированный фон */
         body::before {
             content: '';
             position: absolute;
@@ -59,7 +58,6 @@
             z-index: 1;
         }
 
-        /* Логотип */
         .logo {
             display: flex;
             align-items: center;
@@ -102,7 +100,6 @@
             text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
         }
 
-        /* Статистика в стиле Spamlordy */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -141,7 +138,6 @@
             margin-top: 5px;
         }
 
-        /* Колесо */
         .wheel-wrapper {
             position: relative;
             width: 100%;
@@ -152,8 +148,8 @@
 
         .wheel-container {
             position: relative;
-            width: 280px;
-            height: 280px;
+            width: 300px;
+            height: 300px;
         }
 
         .wheel {
@@ -196,7 +192,6 @@
             border: 3px solid gold;
         }
 
-        /* Центр колеса с логотипом */
         .wheel-center {
             position: absolute;
             top: 50%;
@@ -254,40 +249,52 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
         }
 
+        /* Контейнер для текста внутри сегмента */
         .segment-content {
-            transform: rotate(45deg);
+            position: absolute;
+            width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 6px 10px;
+            transform: rotate(45deg) translateX(15%) translateY(15%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 12px;
             border-radius: 40px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            backdrop-filter: blur(2px);
-            min-width: 60px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            min-width: 85px;
+            left: 55%;
+            top: 45%;
+            transform-origin: center;
         }
 
         .prize-emoji {
-            font-size: 18px;
+            font-size: 22px;
             filter: drop-shadow(0 2px 4px black);
+            margin-bottom: 2px;
         }
 
         .prize-text {
-            font-size: 11px;
-            font-weight: 700;
+            font-size: 13px;
+            font-weight: 800;
             color: white;
             text-shadow: 0 2px 4px black;
             letter-spacing: 0.5px;
             white-space: nowrap;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,215,0,0.3);
         }
 
-        /* Цвета сегментов (градиенты) */
+        /* Цвета сегментов */
         .segment[data-index="0"] { background: linear-gradient(135deg, #FF6B6B, #FF4949); }
         .segment[data-index="1"] { background: linear-gradient(135deg, #4ECDC4, #45B7D1); }
         .segment[data-index="2"] { background: linear-gradient(135deg, #45B7D1, #2C9BB3); }
@@ -496,26 +503,29 @@
             animation: pulse 1.5s infinite;
         }
 
-        /* Адаптация */
         @media (max-width: 380px) {
             .wheel-container {
-                width: 240px;
-                height: 240px;
+                width: 260px;
+                height: 260px;
             }
             
-            .prize-text {
-                font-size: 9px;
+            .segment-content {
+                min-width: 70px;
+                padding: 5px 8px;
             }
             
             .prize-emoji {
-                font-size: 14px;
+                font-size: 18px;
+            }
+            
+            .prize-text {
+                font-size: 10px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Логотип Spamlordy -->
         <div class="logo">
             <span class="logo-icon">⚡</span>
             <span class="logo-text">SPAMLORDY</span>
@@ -524,7 +534,6 @@
 
         <h1>Колесо фортуны</h1>
 
-        <!-- Статистика -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value" id="freeSpins">0</div>
@@ -540,7 +549,6 @@
             </div>
         </div>
 
-        <!-- Колесо -->
         <div class="wheel-wrapper">
             <div class="wheel-container">
                 <div class="pointer"></div>
@@ -550,13 +558,11 @@
             </div>
         </div>
 
-        <!-- Информация о призе -->
         <div class="prize-info" id="prizeInfo">
             <div class="prize-info-main">🎯 Готов крутить?</div>
             <div class="prize-info-sub">Нажми кнопку и испытай удачу!</div>
         </div>
 
-        <!-- Бейджи статуса -->
         <div class="badges">
             <div class="badge free" id="freeBadge">
                 <span>🆓</span>
@@ -570,12 +576,10 @@
             </div>
         </div>
 
-        <!-- Кнопка кручения -->
         <button class="action-btn" id="spinBtn" onclick="spinWheel()">
             🎡 КРУТИТЬ
         </button>
 
-        <!-- Выпадающий список призов -->
         <div class="prizes-dropdown">
             <button class="dropdown-btn" onclick="togglePrizes()">
                 <span>📋</span>
@@ -585,7 +589,6 @@
             <div class="prizes-grid" id="prizesGrid"></div>
         </div>
 
-        <!-- Кнопка назад -->
         <button class="secondary-btn" onclick="closeApp()">
             ◀️ НАЗАД В ПРОФИЛЬ
         </button>
@@ -600,25 +603,23 @@
         let isSpinning = false;
         let totalSpins = 0;
 
-        // Призы с эмодзи и короткими названиями
         const prizes = [
-            { name: '1 час', value: 60, color: '#FF6B6B', emoji: '⏱️', short: '1ч' },
-            { name: '2 часа', value: 120, color: '#4ECDC4', emoji: '⏱️', short: '2ч' },
-            { name: '3 часа', value: 180, color: '#45B7D1', emoji: '⏱️', short: '3ч' },
-            { name: '6 часов', value: 360, color: '#96CEB4', emoji: '⏱️', short: '6ч' },
-            { name: '2 слота', value: 2, color: '#FFE194', emoji: '🧩', short: '2сл' },
-            { name: 'Лотерея', value: 1, color: '#D4A5A5', emoji: '🎰', short: 'лот' },
-            { name: '+1 прокрут', value: 1, color: '#9B59B6', emoji: '✨', short: '+1' },
-            { name: 'Промокод', value: 50, color: '#F1C40F', emoji: '🎟️', short: 'пром' },
-            { name: '25 грн', value: 25, color: '#E67E22', emoji: '💰', short: '25₴' },
-            { name: '50 грн', value: 50, color: '#2ECC71', emoji: '💰', short: '50₴' }
+            { name: '1 час', value: 60, color: '#FF6B6B', emoji: '⏱️', short: '1 ЧАС' },
+            { name: '2 часа', value: 120, color: '#4ECDC4', emoji: '⏱️', short: '2 ЧАСА' },
+            { name: '3 часа', value: 180, color: '#45B7D1', emoji: '⏱️', short: '3 ЧАСА' },
+            { name: '6 часов', value: 360, color: '#96CEB4', emoji: '⏱️', short: '6 ЧАСОВ' },
+            { name: '2 слота', value: 2, color: '#FFE194', emoji: '🧩', short: '2 СЛОТА' },
+            { name: 'Лотерея', value: 1, color: '#D4A5A5', emoji: '🎰', short: 'ЛОТЕРЕЯ' },
+            { name: '+1 прокрут', value: 1, color: '#9B59B6', emoji: '✨', short: '+1 ПРОКРУТ' },
+            { name: 'Промокод', value: 50, color: '#F1C40F', emoji: '🎟️', short: 'ПРОМОКОД' },
+            { name: '25 грн', value: 25, color: '#E67E22', emoji: '💰', short: '25 ГРН' },
+            { name: '50 грн', value: 50, color: '#2ECC71', emoji: '💰', short: '50 ГРН' }
         ];
 
         tg.ready();
         tg.expand();
         tg.MainButton.hide();
 
-        // Заполнение списка призов
         function fillPrizesGrid() {
             const grid = document.getElementById('prizesGrid');
             grid.innerHTML = '';
@@ -651,7 +652,6 @@
 
                 canSpin = canSpinFree;
 
-                // Обновляем бейджи
                 document.getElementById('freeBadge').innerHTML = `
                     <span>🆓</span>
                     <span>Бесплатный</span>
@@ -707,10 +707,8 @@
             }
         }
 
-        // Создание сегментов колеса
         function createWheelSegments() {
             const wheel = document.getElementById('wheel');
-            // Сохраняем центр
             const center = wheel.querySelector('.wheel-center');
             wheel.innerHTML = '';
             
@@ -724,9 +722,20 @@
                 const rotateAngle = index * anglePerPrize;
                 segment.style.transform = `rotate(${rotateAngle}deg) skewY(${90 - anglePerPrize}deg)`;
 
+                // Создаем контейнер для текста
                 const content = document.createElement('div');
                 content.className = 'segment-content';
-                content.style.transform = `rotate(${anglePerPrize / 2}deg) skewY(-${90 - anglePerPrize}deg)`;
+                
+                // Рассчитываем смещение для каждого сегмента
+                const offsetAngle = (index * anglePerPrize) + (anglePerPrize / 2);
+                const radius = 85; // Расстояние от центра
+                const radian = (offsetAngle - 45) * Math.PI / 180;
+                const left = 50 + radius * Math.cos(radian);
+                const top = 50 + radius * Math.sin(radian);
+                
+                content.style.left = `${left}%`;
+                content.style.top = `${top}%`;
+                content.style.transform = 'translate(-50%, -50%)';
                 
                 content.innerHTML = `
                     <span class="prize-emoji">${prize.emoji}</span>
@@ -737,7 +746,6 @@
                 wheel.appendChild(segment);
             });
             
-            // Возвращаем центр
             wheel.appendChild(center);
         }
 
@@ -852,17 +860,14 @@
             tg.close();
         }
 
-        // Инициализация
         fillPrizesGrid();
         createWheelSegments();
         getUrlParams();
 
-        // Обновляем колесо при изменении размера
         window.addEventListener('resize', () => {
             createWheelSegments();
         });
 
-        // Закрытие по свайпу вниз
         let touchStartY = 0;
         document.addEventListener('touchstart', (e) => {
             touchStartY = e.touches[0].clientY;
