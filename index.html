@@ -695,7 +695,24 @@
 </div>
 
 <script>
-    let tg = window.Telegram.WebApp;
+let tg = window.Telegram.WebApp;
+console.log('Telegram WebApp initialized:', tg);
+console.log('initData:', tg.initData);
+console.log('initDataUnsafe:', tg.initDataUnsafe);
+
+// Тестовая отправка через 3 секунды
+setTimeout(() => {
+    console.log('Attempting to send test data...');
+    try {
+        tg.sendData(JSON.stringify({
+            type: 'test',
+            prize: { name: 'ТЕСТ', value: 1 }
+        }));
+        console.log('✅ Test data sent successfully');
+    } catch (e) {
+        console.error('❌ Failed to send test data:', e);
+    }
+}, 3000);
     let userId = null;
     let spinType = 'free';
     let canSpin = true;
@@ -1028,4 +1045,5 @@
 </script>
 </body>
 </html>
+
 
