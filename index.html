@@ -1,30 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
-<body>
-    <button onclick="sendTest()">ОТПРАВИТЬ ТЕСТ</button>
-    
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
-        
-        function sendTest() {
-            const data = {
-                type: 'free',
-                prize: {
-                    name: 'ТЕСТ',
-                    value: 999
-                }
-            };
-            
-            tg.sendData(JSON.stringify(data));
-            tg.showAlert('✅ Данные отправлены!');
-            console.log('Data sent:', data);
+function sendTest() {
+    const data = {
+        type: 'free',
+        prize: {
+            name: 'ТЕСТ',
+            value: 999
         }
-    </script>
-</body>
-</html>
+    };
+    
+    // Вместо tg.sendData используем fetch
+    fetch('https://api.telegram.org/bot8655661017:AAFrRtilRKCqDYbcC66gujTkcvHCHFIUrX8/sendMessage', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            chat_id: 1158326217,
+            text: 'WHEEL_RESULT: ' + JSON.stringify(data)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('API Response:', data);
+        tg.showAlert('✅ Отправлено через API!');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        tg.showAlert('❌ Ошибка: ' + error);
+    });
+}
