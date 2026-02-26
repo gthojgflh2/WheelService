@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Колесо фортуны Spamlordy</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -36,7 +36,7 @@
         }
 
         h1 {
-            font-size: 32px;
+            font-size: 28px;
             margin-bottom: 15px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             display: flex;
@@ -45,20 +45,11 @@
             gap: 10px;
         }
 
-        h1 span {
-            background: rgba(255,215,0,0.3);
-            padding: 5px 15px;
-            border-radius: 50px;
-            font-size: 16px;
-            border: 1px solid gold;
-        }
-
         .stats {
             background: rgba(255,255,255,0.2);
             border-radius: 20px;
-            padding: 15px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
+            padding: 12px;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-around;
             border: 1px solid rgba(255,255,255,0.3);
@@ -70,29 +61,35 @@
         }
 
         .stat-value {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
             background: rgba(255,255,255,0.2);
-            border-radius: 15px;
-            padding: 5px 10px;
+            border-radius: 12px;
+            padding: 4px 8px;
             display: inline-block;
-            min-width: 60px;
+            min-width: 50px;
         }
 
         .stat-label {
-            font-size: 12px;
+            font-size: 11px;
             opacity: 0.9;
-            margin-top: 5px;
+            margin-top: 4px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+        }
+
+        .wheel-wrapper {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 10px 0 20px;
         }
 
         .wheel-container {
             position: relative;
             width: 280px;
             height: 280px;
-            margin: 20px auto 30px;
-            cursor: pointer;
         }
 
         .wheel {
@@ -102,7 +99,7 @@
             position: relative;
             overflow: hidden;
             transition: transform 3s cubic-bezier(0.25, 0.1, 0.15, 1);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 0 30px rgba(255,215,0,0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,215,0,0.3);
             border: 4px solid gold;
         }
 
@@ -117,36 +114,25 @@
             background: white;
             border-radius: 50%;
             z-index: 10;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             border: 3px solid gold;
         }
 
         .pointer {
             position: absolute;
-            top: -20px;
+            top: -15px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 25px solid transparent;
-            border-right: 25px solid transparent;
-            border-top: 50px solid #ff4444;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #ff4444;
             z-index: 20;
-            filter: drop-shadow(0 8px 8px rgba(0,0,0,0.4));
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.4));
         }
 
-        .pointer::after {
-            content: '';
-            position: absolute;
-            top: -45px;
-            left: -8px;
-            width: 16px;
-            height: 16px;
-            background: gold;
-            border-radius: 50%;
-            box-shadow: 0 0 15px gold;
-        }
-
+        /* Упрощенное отображение сегментов */
         .segment {
             position: absolute;
             width: 50%;
@@ -155,68 +141,74 @@
             left: 0;
             top: 0;
             display: flex;
-            justify-content: center;
+            justify-content: flex-end;
             align-items: center;
+            padding-right: 15px;
             color: white;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 14px;
             text-shadow: 2px 2px 3px black;
-            padding-left: 35px;
             border: 1px solid rgba(255,255,255,0.3);
-            box-sizing: border-box;
         }
 
         .segment span {
             transform: rotate(45deg);
-            display: block;
-            text-align: center;
-            width: 100%;
-            font-size: 14px;
-            line-height: 1.2;
-            word-break: break-word;
-            max-width: 70px;
+            white-space: nowrap;
+            background: rgba(0,0,0,0.5);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
+        /* Цвета сегментов */
+        .segment[data-index="0"] { background: #FF6B6B; } /* 1 час */
+        .segment[data-index="1"] { background: #4ECDC4; } /* 2 часа */
+        .segment[data-index="2"] { background: #45B7D1; } /* 3 часа */
+        .segment[data-index="3"] { background: #96CEB4; } /* 6 часов */
+        .segment[data-index="4"] { background: #FFE194; } /* 2 слота */
+        .segment[data-index="5"] { background: #D4A5A5; } /* Лотерея */
+        .segment[data-index="6"] { background: #9B59B6; } /* +1 прокрут */
+        .segment[data-index="7"] { background: #F1C40F; } /* Промокод */
+        .segment[data-index="8"] { background: #E67E22; } /* 25 грн */
+        .segment[data-index="9"] { background: #2ECC71; } /* 50 грн */
+
         .prize-info {
-            font-size: 20px;
+            font-size: 18px;
             margin: 15px 0;
-            min-height: 60px;
+            min-height: 50px;
             font-weight: bold;
             background: rgba(0,0,0,0.3);
-            padding: 12px;
-            border-radius: 50px;
+            padding: 10px;
+            border-radius: 40px;
             border: 1px solid gold;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
         }
 
         .spin-btn {
             background: linear-gradient(45deg, #ff6b6b, #ff8e53);
             color: white;
             border: none;
-            padding: 18px 40px;
-            border-radius: 60px;
-            font-size: 22px;
+            padding: 16px 30px;
+            border-radius: 50px;
+            font-size: 20px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
             width: 100%;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             border: 2px solid gold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
         }
 
         .spin-btn:active {
             transform: scale(0.97);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
 
         .spin-btn:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
-            background: linear-gradient(45deg, #999, #777);
+            background: #999;
         }
 
         .back-btn {
@@ -225,101 +217,100 @@
             border: 2px solid rgba(255,255,255,0.5);
             padding: 12px 20px;
             border-radius: 50px;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             width: 100%;
             backdrop-filter: blur(10px);
-            transition: all 0.2s;
-            font-weight: 500;
-            letter-spacing: 1px;
-        }
-
-        .back-btn:active {
-            background: rgba(255,255,255,0.3);
-            transform: scale(0.98);
         }
 
         .badges {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .free-badge, .extra-badge {
+            padding: 6px 12px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .free-badge {
             background: #4CAF50;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 4px 10px rgba(76,175,80,0.3);
         }
 
         .extra-badge {
             background: #FF9800;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 30px;
-            font-size: 14px;
-            font-weight: bold;
-            display: inline-flex;
+        }
+
+        /* Список призов для мобильных */
+        .prizes-list {
+            display: none;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .prizes-list.visible {
+            display: block;
+        }
+
+        .prizes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .prize-item {
+            display: flex;
             align-items: center;
             gap: 5px;
-            box-shadow: 0 4px 10px rgba(255,152,0,0.3);
+            background: rgba(255,255,255,0.1);
+            padding: 5px 8px;
+            border-radius: 20px;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .prize-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
         }
 
-        .pulse {
-            animation: pulse 2s infinite;
+        .show-prizes-btn {
+            background: none;
+            border: 1px dashed rgba(255,255,255,0.5);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 5px;
+            cursor: pointer;
+            width: 100%;
         }
-
-        @keyframes glow {
-            0% { box-shadow: 0 0 10px gold; }
-            50% { box-shadow: 0 0 30px gold; }
-            100% { box-shadow: 0 0 10px gold; }
-        }
-
-        .wheel.spinning {
-            animation: glow 1s infinite;
-        }
-
-        /* Улучшенные цвета для сегментов */
-        .segment[data-prize="1 час"] { background: #FF6B6B; }
-        .segment[data-prize="2 часа"] { background: #4ECDC4; }
-        .segment[data-prize="3 часа"] { background: #45B7D1; }
-        .segment[data-prize="6 часов"] { background: #96CEB4; }
-        .segment[data-prize="2 слота"] { background: #FFE194; }
-        .segment[data-prize="Лотерея"] { background: #D4A5A5; }
-        .segment[data-prize="+1 прокрут"] { background: #9B59B6; }
-        .segment[data-prize="Промокод"] { background: #F1C40F; }
-        .segment[data-prize="25 грн"] { background: #E67E22; }
-        .segment[data-prize="50 грн"] { background: #2ECC71; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>
-            🎡 Колесо фортуны
-            <span>VIP</span>
-        </h1>
+        <h1>🎡 Колесо фортуны</h1>
 
         <div class="stats">
             <div class="stat-item">
                 <div class="stat-value" id="freeSpins">0</div>
-                <div class="stat-label">Бесплатных</div>
+                <div class="stat-label">Бесплатно</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value" id="extraSpins">0</div>
-                <div class="stat-label">Доп. прокрутов</div>
+                <div class="stat-label">Дополнительно</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value" id="totalSpins">0</div>
@@ -327,29 +318,37 @@
             </div>
         </div>
 
-        <div class="wheel-container">
-            <div class="pointer"></div>
-            <div class="wheel" id="wheel"></div>
+        <div class="wheel-wrapper">
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <div class="wheel" id="wheel"></div>
+            </div>
         </div>
 
         <div class="prize-info" id="prizeInfo">
-            🎯 Нажми кнопку, чтобы крутить!
+            👆 Нажми КРУТИТЬ
         </div>
 
         <div class="badges">
-            <span class="free-badge" id="freeBadge">
-                🆓 Бесплатный: ✅
-            </span>
-            <span class="extra-badge" id="extraBadge">
-                ✨ Доп. прокрутов: 0
-            </span>
+            <span class="free-badge" id="freeBadge">🆓 ✅</span>
+            <span class="extra-badge" id="extraBadge">✨ 0</span>
         </div>
 
         <button class="spin-btn" id="spinBtn" onclick="spinWheel()">
             🎡 КРУТИТЬ
         </button>
+        
+        <button class="show-prizes-btn" onclick="togglePrizesList()">
+            📋 Показать все призы
+        </button>
+        
+        <div class="prizes-list" id="prizesList">
+            <div style="font-weight: bold; margin-bottom: 5px;">🎁 Все призы:</div>
+            <div class="prizes-grid" id="prizesGrid"></div>
+        </div>
+
         <button class="back-btn" onclick="closeApp()">
-            ◀️ НАЗАД В ПРОФИЛЬ
+            ◀️ НАЗАД
         </button>
     </div>
 
@@ -362,26 +361,44 @@
         let isSpinning = false;
         let totalSpins = 0;
 
-        // Призы и их цвета
+        // Призы
         const prizes = [
-            { name: '1 час', value: 60, color: '#FF6B6B', emoji: '⏱️' },
-            { name: '2 часа', value: 120, color: '#4ECDC4', emoji: '⏱️' },
-            { name: '3 часа', value: 180, color: '#45B7D1', emoji: '⏱️' },
-            { name: '6 часов', value: 360, color: '#96CEB4', emoji: '⏱️' },
-            { name: '2 слота', value: 2, color: '#FFE194', emoji: '🧩' },
-            { name: 'Лотерея', value: 1, color: '#D4A5A5', emoji: '🎰' },
-            { name: '+1 прокрут', value: 1, color: '#9B59B6', emoji: '✨' },
-            { name: 'Промокод', value: 50, color: '#F1C40F', emoji: '🎟️' },
-            { name: '25 грн', value: 25, color: '#E67E22', emoji: '💰' },
-            { name: '50 грн', value: 50, color: '#2ECC71', emoji: '💰' }
+            { name: '1 час', value: 60, color: '#FF6B6B', short: '1ч' },
+            { name: '2 часа', value: 120, color: '#4ECDC4', short: '2ч' },
+            { name: '3 часа', value: 180, color: '#45B7D1', short: '3ч' },
+            { name: '6 часов', value: 360, color: '#96CEB4', short: '6ч' },
+            { name: '2 слота', value: 2, color: '#FFE194', short: '2сл' },
+            { name: 'Лотерея', value: 1, color: '#D4A5A5', short: 'лот' },
+            { name: '+1 прокрут', value: 1, color: '#9B59B6', short: '+1' },
+            { name: 'Промокод', value: 50, color: '#F1C40F', short: 'пром' },
+            { name: '25 грн', value: 25, color: '#E67E22', short: '25₴' },
+            { name: '50 грн', value: 50, color: '#2ECC71', short: '50₴' }
         ];
 
-        // Настройки Telegram WebApp
         tg.ready();
         tg.expand();
         tg.MainButton.hide();
 
-        // Получаем данные из URL
+        // Заполняем список призов
+        function fillPrizesList() {
+            const grid = document.getElementById('prizesGrid');
+            grid.innerHTML = '';
+            prizes.forEach((prize, index) => {
+                const item = document.createElement('div');
+                item.className = 'prize-item';
+                item.innerHTML = `
+                    <div class="prize-color" style="background: ${prize.color};"></div>
+                    <span>${prize.name}</span>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        function togglePrizesList() {
+            const list = document.getElementById('prizesList');
+            list.classList.toggle('visible');
+        }
+
         function getUrlParams() {
             try {
                 const params = new URLSearchParams(window.location.search);
@@ -391,30 +408,24 @@
 
                 canSpin = canSpinFree;
 
-                document.getElementById('freeBadge').innerHTML = canSpinFree ?
-                    '🆓 Бесплатный: ✅' : '🆓 Бесплатный: ❌';
-                document.getElementById('extraBadge').innerHTML = `✨ Доп. прокрутов: ${extraSpins}`;
-
-                // Загружаем статистику из localStorage
+                document.getElementById('freeBadge').innerHTML = canSpinFree ? '🆓 ✅' : '🆓 ❌';
+                document.getElementById('extraBadge').innerHTML = `✨ ${extraSpins}`;
+                
                 loadStats();
                 updateSpinButton();
             } catch (e) {
-                console.error('Error parsing URL params:', e);
+                console.error('Error:', e);
             }
         }
 
         function loadStats() {
             try {
                 const saved = localStorage.getItem(`wheel_stats_${userId}`);
-                if (saved) {
-                    totalSpins = parseInt(saved) || 0;
-                }
+                if (saved) totalSpins = parseInt(saved) || 0;
                 document.getElementById('totalSpins').textContent = totalSpins;
                 document.getElementById('freeSpins').textContent = canSpin ? '1' : '0';
                 document.getElementById('extraSpins').textContent = extraSpins;
-            } catch (e) {
-                console.error('Error loading stats:', e);
-            }
+            } catch (e) {}
         }
 
         function saveStats() {
@@ -422,9 +433,7 @@
                 if (userId) {
                     localStorage.setItem(`wheel_stats_${userId}`, totalSpins.toString());
                 }
-            } catch (e) {
-                console.error('Error saving stats:', e);
-            }
+            } catch (e) {}
         }
 
         function updateSpinButton() {
@@ -434,7 +443,7 @@
                 spinType = 'free';
                 btn.disabled = false;
             } else if (extraSpins > 0) {
-                btn.innerHTML = `✨ КРУТИТЬ ДОП. ПРОКРУТ (${extraSpins})`;
+                btn.innerHTML = `✨ КРУТИТЬ (${extraSpins})`;
                 spinType = 'extra';
                 btn.disabled = false;
             } else {
@@ -443,7 +452,7 @@
             }
         }
 
-        // Создаем сегменты колеса
+        // Упрощенное создание колеса
         function createWheelSegments() {
             const wheel = document.getElementById('wheel');
             wheel.innerHTML = '';
@@ -453,38 +462,21 @@
             prizes.forEach((prize, index) => {
                 const segment = document.createElement('div');
                 segment.className = 'segment';
-                segment.setAttribute('data-prize', prize.name);
-                segment.style.backgroundColor = prize.color;
+                segment.setAttribute('data-index', index);
                 
-                // Вычисляем углы для правильного отображения
                 const rotateAngle = index * anglePerPrize;
                 segment.style.transform = `rotate(${rotateAngle}deg) skewY(${90 - anglePerPrize}deg)`;
 
                 const span = document.createElement('span');
-                // Компенсируем skew для текста
                 span.style.transform = `rotate(${anglePerPrize / 2}deg) skewY(-${90 - anglePerPrize}deg)`;
-                span.style.display = 'flex';
-                span.style.flexDirection = 'column';
-                span.style.alignItems = 'center';
-                span.style.justifyContent = 'center';
-                span.style.height = '100%';
-                span.style.width = '100%';
-                span.style.fontSize = window.innerWidth < 380 ? '12px' : '14px';
-                
-                // Добавляем эмодзи и текст
-                span.innerHTML = `
-                    <span style="font-size: 20px; margin-bottom: 2px;">${prize.emoji}</span>
-                    <span>${prize.name}</span>
-                `;
+                span.textContent = prize.short;
 
                 segment.appendChild(span);
                 wheel.appendChild(segment);
             });
         }
 
-        // Выбор случайного приза
         function getRandomPrize() {
-            // Веса призов (чем больше число, тем выше шанс)
             const weights = [30, 20, 15, 5, 2, 4, 8, 1, 12, 3];
             const totalWeight = weights.reduce((a, b) => a + b, 0);
             let random = Math.random() * totalWeight;
@@ -493,50 +485,40 @@
             for (let i = 0; i < weights.length; i++) {
                 sum += weights[i];
                 if (random < sum) {
-                    // Добавляем случайное смещение для реалистичности
-                    const extraRotation = Math.random() * 20 - 10;
                     return {
                         index: i,
                         prize: prizes[i],
-                        rotation: 360 * 5 + (i * (360 / prizes.length)) + (360 / prizes.length / 2) + extraRotation
+                        rotation: 360 * 5 + (i * (360 / prizes.length)) + (360 / prizes.length / 2)
                     };
                 }
             }
             return { index: 0, prize: prizes[0], rotation: 360 * 5 };
         }
 
-        // Крутим колесо
         function spinWheel() {
             if (isSpinning) return;
 
             let currentSpinType = spinType;
 
             if (currentSpinType === 'free' && !canSpin) {
-                tg.showAlert('❌ Бесплатный прокрут уже использован на этой неделе!');
+                tg.showAlert('❌ Бесплатный прокрут уже использован!');
                 return;
             }
 
             if (currentSpinType === 'extra' && extraSpins <= 0) {
-                tg.showAlert('❌ У вас нет дополнительных прокрутов!');
+                tg.showAlert('❌ Нет дополнительных прокрутов!');
                 return;
             }
 
             isSpinning = true;
-            const wheel = document.getElementById('wheel');
-            wheel.classList.add('spinning');
             document.getElementById('spinBtn').disabled = true;
-            document.getElementById('prizeInfo').innerHTML = '🎡 Крутим колесо... 🔮';
+            document.getElementById('prizeInfo').innerHTML = '🎡 Крутим...';
 
             const result = getRandomPrize();
-
-            // Анимируем вращение
+            const wheel = document.getElementById('wheel');
             wheel.style.transform = `rotate(${result.rotation}deg)`;
 
-            // Отправляем результат в бот
             setTimeout(() => {
-                wheel.classList.remove('spinning');
-                
-                // Отправляем данные в бот
                 tg.sendData(JSON.stringify({
                     type: currentSpinType,
                     prize: {
@@ -545,91 +527,38 @@
                     }
                 }));
 
-                // Обновляем статистику
                 totalSpins++;
                 document.getElementById('totalSpins').textContent = totalSpins;
                 
-                // Показываем результат
-                document.getElementById('prizeInfo').innerHTML = `
-                    🎉 <b>${result.prize.emoji} ${result.prize.name}!</b><br>
-                    <span style="font-size: 14px; opacity: 0.9;">${getPrizeDescription(result.prize)}</span>
-                `;
+                document.getElementById('prizeInfo').innerHTML = `🎉 ${result.prize.name}!`;
 
-                // Обновляем статистику прокрутов
                 if (currentSpinType === 'free') {
                     canSpin = false;
-                    document.getElementById('freeBadge').innerHTML = '🆓 Бесплатный: ❌';
+                    document.getElementById('freeBadge').innerHTML = '🆓 ❌';
                     document.getElementById('freeSpins').textContent = '0';
                 } else {
                     extraSpins--;
-                    document.getElementById('extraBadge').innerHTML = `✨ Доп. прокрутов: ${extraSpins}`;
+                    document.getElementById('extraBadge').innerHTML = `✨ ${extraSpins}`;
                     document.getElementById('extraSpins').textContent = extraSpins;
                 }
 
                 saveStats();
                 updateSpinButton();
-
-                setTimeout(() => {
-                    isSpinning = false;
-                }, 500);
+                isSpinning = false;
 
             }, 3000);
-        }
-
-        function getPrizeDescription(prize) {
-            switch(prize.name) {
-                case '1 час': return '✅ +60 минут доступа';
-                case '2 часа': return '✅ +120 минут доступа';
-                case '3 часа': return '✅ +180 минут доступа';
-                case '6 часов': return '✅ +360 минут доступа';
-                case '2 слота': return '✅ +2 слота на 2 недели';
-                case 'Лотерея': return '🎰 Бесплатная лотерея';
-                case '+1 прокрут': return '✨ +1 дополнительный прокрут';
-                case 'Промокод': return '🎟 Промокод на 50 грн';
-                case '25 грн': return '💰 +25 грн на баланс';
-                case '50 грн': return '💰 +50 грн на баланс';
-                default: return '🎁 Приз получен!';
-            }
         }
 
         function closeApp() {
             tg.close();
         }
 
-        // Обработка изменения размера экрана
-        window.addEventListener('resize', () => {
-            createWheelSegments();
-        });
-
         // Инициализация
+        fillPrizesList();
         createWheelSegments();
         getUrlParams();
 
-        // Обработка данных от бота
-        tg.onEvent('mainButtonClicked', function() {
-            tg.sendData(JSON.stringify({ action: 'close' }));
-        });
-
-        // Добавляем поддержку свайпов для мобильных
-        let touchStartX = 0;
-        let touchStartY = 0;
-
-        document.addEventListener('touchstart', (e) => {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        });
-
-        document.addEventListener('touchend', (e) => {
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
-            const dx = touchEndX - touchStartX;
-            const dy = touchEndY - touchStartY;
-
-            // Если свайп вниз - закрываем
-            if (Math.abs(dy) > Math.abs(dx) && dy > 50) {
-                closeApp();
-            }
-        });
+        window.addEventListener('resize', createWheelSegments);
     </script>
 </body>
 </html>
