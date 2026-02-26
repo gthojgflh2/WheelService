@@ -695,26 +695,14 @@
 </div>
 
 <script>
-    // 👇 ВСЕ ПЕРЕМЕННЫЕ ОБЪЯВЛЯЕМ В САМОМ НАЧАЛЕ!
     let tg = window.Telegram.WebApp;
     let userId = null;
     let spinType = 'free';
     let canSpin = true;
     let extraSpins = 0;
-    let isSpinning = false;  // 👈 ВАЖНО: isSpinning ДОЛЖНА БЫТЬ ЗДЕСЬ!
+    let isSpinning = false;
     let totalSpins = 0;
     let currentRotation = 0;
-
-    // Отладка
-    console.log('Telegram WebApp version:', tg.version);
-    console.log('Platform:', tg.platform);
-    console.log('Theme params:', tg.themeParams);
-    
-    tg.ready();
-    tg.expand();
-    
-    // Используем showAlert вместо showPopup для версии 6.0
-    tg.showAlert('WebApp загружен! Версия: ' + tg.version);
 
     const prizes = [
         { name: '1 ЧАС', value: 60, color: '#FF6B6B', emoji: '⏱️' },
@@ -734,6 +722,9 @@
 
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
+
+    tg.ready();
+    tg.expand();
 
     function drawWheel(rotation = 0) {
         const centerX = 150;
@@ -968,7 +959,14 @@
                 };
 
                 // Отправляем в Telegram бот
-                tg.sendData(JSON.stringify(data));
+                fetch('https://api.telegram.org/bot' + tg.initDataUnsafe?.botToken + '/sendMessage', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        chat_id: userId,
+                        text: 'WHEEL_RESULT: ' + JSON.stringify(data)
+                    })
+                });
                 console.log('Data sent to bot:', data); // Для отладки
 
                 totalSpins++;
@@ -1000,15 +998,6 @@
                 saveStats();
                 updateSpinButton();
                 isSpinning = false;
-                
-                // 👇 ТЕСТОВЫЙ ОТПРАВЩИК ЧЕРЕЗ 5 СЕКУНД
-                setTimeout(() => {
-                    tg.sendData(JSON.stringify({
-                        type: 'free',
-                        prize: { name: 'ТЕСТ', value: 999 }
-                    }));
-                    tg.showAlert('Тестовые данные отправлены!');
-                }, 5000);
             }
         }
 
