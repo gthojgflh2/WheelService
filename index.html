@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Колесо фортуны Spamlordy</title>
+    <title>Spamlordy | Колесо фортуны</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -14,76 +16,138 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(145deg, #0B0C1E 0%, #1A1B3A 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             color: white;
-            padding: 10px;
+            padding: 12px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Анимированный фон */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+            animation: rotate 30s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .container {
             width: 100%;
             max-width: 420px;
-            padding: 15px;
+            padding: 20px 15px;
             text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 30px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(20, 22, 45, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: 48px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5),
+                        inset 0 0 30px rgba(255, 215, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Логотип */
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .logo-icon {
+            font-size: 32px;
+            filter: drop-shadow(0 0 10px gold);
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .logo-badge {
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid gold;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            color: gold;
         }
 
         h1 {
             font-size: 28px;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff, #FFD700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Статистика в стиле Spamlordy */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
+            margin-bottom: 25px;
         }
 
-        .stats {
-            background: rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 12px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-around;
-            border: 1px solid rgba(255,255,255,0.3);
+        .stat-card {
+            background: rgba(10, 12, 30, 0.7);
+            border-radius: 24px;
+            padding: 15px 5px;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s;
         }
 
-        .stat-item {
-            text-align: center;
-            flex: 1;
+        .stat-card:active {
+            transform: scale(0.95);
         }
 
         .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            background: rgba(255,255,255,0.2);
-            border-radius: 12px;
-            padding: 4px 8px;
-            display: inline-block;
-            min-width: 50px;
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
         }
 
         .stat-label {
-            font-size: 11px;
-            opacity: 0.9;
-            margin-top: 4px;
+            font-size: 10px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
         }
 
+        /* Колесо */
         .wheel-wrapper {
             position: relative;
             width: 100%;
             display: flex;
             justify-content: center;
-            margin: 10px 0 20px;
+            margin: 20px 0 30px;
         }
 
         .wheel-container {
@@ -98,9 +162,23 @@
             border-radius: 50%;
             position: relative;
             overflow: hidden;
-            transition: transform 3s cubic-bezier(0.25, 0.1, 0.15, 1);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,215,0,0.3);
-            border: 4px solid gold;
+            transition: transform 3.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6),
+                        0 0 0 4px rgba(255, 215, 0, 0.3),
+                        0 0 0 8px rgba(255, 215, 0, 0.1);
+        }
+
+        .wheel::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, gold, orange);
+            opacity: 0.3;
+            z-index: -1;
         }
 
         .wheel::after {
@@ -109,13 +187,34 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
-            background: white;
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle at 30% 30%, #fff, #ddd);
             border-radius: 50%;
             z-index: 10;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             border: 3px solid gold;
+        }
+
+        /* Центр колеса с логотипом */
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #FFD700, #FFA500);
+            z-index: 11;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: #0B0C1E;
+            box-shadow: 0 0 20px gold;
+            border: 2px solid white;
         }
 
         .pointer {
@@ -125,14 +224,26 @@
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 40px solid #ff4444;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid #FF4444;
             z-index: 20;
-            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.4));
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
         }
 
-        /* Упрощенное отображение сегментов */
+        .pointer::after {
+            content: '';
+            position: absolute;
+            top: -45px;
+            left: -10px;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle at 30% 30%, gold, orange);
+            border-radius: 50%;
+            box-shadow: 0 0 20px gold;
+        }
+
+        /* Сегменты колеса */
         .segment {
             position: absolute;
             width: 50%;
@@ -141,214 +252,342 @@
             left: 0;
             top: 0;
             display: flex;
-            justify-content: flex-end;
+            justify-content: center;
             align-items: center;
-            padding-right: 15px;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-            text-shadow: 2px 2px 3px black;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
         }
 
-        .segment span {
+        .segment-content {
             transform: rotate(45deg);
-            white-space: nowrap;
-            background: rgba(0,0,0,0.5);
-            padding: 3px 8px;
-            border-radius: 20px;
-            font-size: 12px;
-            border: 1px solid rgba(255,255,255,0.3);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 6px 10px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            backdrop-filter: blur(2px);
+            min-width: 60px;
         }
 
-        /* Цвета сегментов */
-        .segment[data-index="0"] { background: #FF6B6B; } /* 1 час */
-        .segment[data-index="1"] { background: #4ECDC4; } /* 2 часа */
-        .segment[data-index="2"] { background: #45B7D1; } /* 3 часа */
-        .segment[data-index="3"] { background: #96CEB4; } /* 6 часов */
-        .segment[data-index="4"] { background: #FFE194; } /* 2 слота */
-        .segment[data-index="5"] { background: #D4A5A5; } /* Лотерея */
-        .segment[data-index="6"] { background: #9B59B6; } /* +1 прокрут */
-        .segment[data-index="7"] { background: #F1C40F; } /* Промокод */
-        .segment[data-index="8"] { background: #E67E22; } /* 25 грн */
-        .segment[data-index="9"] { background: #2ECC71; } /* 50 грн */
+        .prize-emoji {
+            font-size: 18px;
+            filter: drop-shadow(0 2px 4px black);
+        }
+
+        .prize-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 4px black;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        /* Цвета сегментов (градиенты) */
+        .segment[data-index="0"] { background: linear-gradient(135deg, #FF6B6B, #FF4949); }
+        .segment[data-index="1"] { background: linear-gradient(135deg, #4ECDC4, #45B7D1); }
+        .segment[data-index="2"] { background: linear-gradient(135deg, #45B7D1, #2C9BB3); }
+        .segment[data-index="3"] { background: linear-gradient(135deg, #96CEB4, #7BB3A0); }
+        .segment[data-index="4"] { background: linear-gradient(135deg, #FFE194, #FFD966); }
+        .segment[data-index="5"] { background: linear-gradient(135deg, #D4A5A5, #C48B8B); }
+        .segment[data-index="6"] { background: linear-gradient(135deg, #9B59B6, #8E44AD); }
+        .segment[data-index="7"] { background: linear-gradient(135deg, #F1C40F, #F39C12); }
+        .segment[data-index="8"] { background: linear-gradient(135deg, #E67E22, #D35400); }
+        .segment[data-index="9"] { background: linear-gradient(135deg, #2ECC71, #27AE60); }
 
         .prize-info {
-            font-size: 18px;
-            margin: 15px 0;
-            min-height: 50px;
-            font-weight: bold;
-            background: rgba(0,0,0,0.3);
-            padding: 10px;
+            background: rgba(10, 12, 30, 0.8);
             border-radius: 40px;
-            border: 1px solid gold;
+            padding: 16px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 0 20px rgba(255, 215, 0, 0.1);
         }
 
-        .spin-btn {
-            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
-            color: white;
+        .prize-info-main {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .prize-info-sub {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #0B0C1E;
             border: none;
-            padding: 16px 30px;
-            border-radius: 50px;
+            padding: 18px 30px;
+            border-radius: 60px;
             font-size: 20px;
-            font-weight: bold;
+            font-weight: 800;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3),
+                        0 0 0 2px rgba(255, 255, 255, 0.5);
             width: 100%;
-            margin-bottom: 10px;
-            border: 2px solid gold;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .spin-btn:active {
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3), transparent);
+            transform: rotate(45deg);
+            transition: transform 0.5s;
+        }
+
+        .action-btn:active::before {
+            transform: rotate(45deg) translate(10%, 10%);
+        }
+
+        .action-btn:active {
             transform: scale(0.97);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.5);
         }
 
-        .spin-btn:disabled {
+        .action-btn:disabled {
             opacity: 0.5;
+            background: linear-gradient(135deg, #888, #666);
+            box-shadow: none;
             cursor: not-allowed;
-            background: #999;
         }
 
-        .back-btn {
-            background: rgba(255,255,255,0.15);
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.1);
             color: white;
-            border: 2px solid rgba(255,255,255,0.5);
-            padding: 12px 20px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            padding: 14px 20px;
             border-radius: 50px;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             width: 100%;
             backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .secondary-btn:active {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: gold;
         }
 
         .badges {
             display: flex;
-            justify-content: center;
             gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+            margin-bottom: 20px;
         }
 
-        .free-badge, .extra-badge {
-            padding: 6px 12px;
-            border-radius: 25px;
+        .badge {
+            flex: 1;
+            padding: 12px;
+            border-radius: 30px;
             font-size: 13px;
-            font-weight: bold;
-            display: inline-flex;
+            font-weight: 700;
+            display: flex;
             align-items: center;
-            gap: 5px;
+            justify-content: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .free-badge {
-            background: #4CAF50;
+        .badge.free {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
         }
 
-        .extra-badge {
-            background: #FF9800;
+        .badge.extra {
+            background: rgba(255, 152, 0, 0.2);
+            color: #FF9800;
         }
 
-        /* Список призов для мобильных */
-        .prizes-list {
-            display: none;
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-            padding: 10px;
-            margin-top: 15px;
-            font-size: 12px;
-            border: 1px solid rgba(255,255,255,0.2);
+        .prizes-dropdown {
+            margin: 15px 0;
         }
 
-        .prizes-list.visible {
-            display: block;
+        .dropdown-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px dashed rgba(255, 215, 0, 0.3);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .dropdown-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: gold;
         }
 
         .prizes-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
-            margin-top: 8px;
+            margin-top: 10px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
         }
 
-        .prize-item {
+        .prizes-grid.visible {
+            max-height: 500px;
+        }
+
+        .prize-card {
+            background: rgba(10, 12, 30, 0.7);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            border-radius: 20px;
+            padding: 10px;
             display: flex;
             align-items: center;
-            gap: 5px;
-            background: rgba(255,255,255,0.1);
-            padding: 5px 8px;
-            border-radius: 20px;
+            gap: 8px;
+            backdrop-filter: blur(5px);
         }
 
         .prize-color {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
+            width: 25px;
+            height: 25px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, currentColor, currentColor);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
-        .show-prizes-btn {
-            background: none;
-            border: 1px dashed rgba(255,255,255,0.5);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
+        .prize-name {
             font-size: 12px;
-            margin-top: 5px;
-            cursor: pointer;
-            width: 100%;
+            font-weight: 600;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+
+        .spinning {
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Адаптация */
+        @media (max-width: 380px) {
+            .wheel-container {
+                width: 240px;
+                height: 240px;
+            }
+            
+            .prize-text {
+                font-size: 9px;
+            }
+            
+            .prize-emoji {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎡 Колесо фортуны</h1>
+        <!-- Логотип Spamlordy -->
+        <div class="logo">
+            <span class="logo-icon">⚡</span>
+            <span class="logo-text">SPAMLORDY</span>
+            <span class="logo-badge">FORTUNE</span>
+        </div>
 
-        <div class="stats">
-            <div class="stat-item">
+        <h1>Колесо фортуны</h1>
+
+        <!-- Статистика -->
+        <div class="stats-grid">
+            <div class="stat-card">
                 <div class="stat-value" id="freeSpins">0</div>
                 <div class="stat-label">Бесплатно</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-card">
                 <div class="stat-value" id="extraSpins">0</div>
                 <div class="stat-label">Дополнительно</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-card">
                 <div class="stat-value" id="totalSpins">0</div>
                 <div class="stat-label">Всего</div>
             </div>
         </div>
 
+        <!-- Колесо -->
         <div class="wheel-wrapper">
             <div class="wheel-container">
                 <div class="pointer"></div>
-                <div class="wheel" id="wheel"></div>
+                <div class="wheel" id="wheel">
+                    <div class="wheel-center">⚡</div>
+                </div>
             </div>
         </div>
 
+        <!-- Информация о призе -->
         <div class="prize-info" id="prizeInfo">
-            👆 Нажми КРУТИТЬ
+            <div class="prize-info-main">🎯 Готов крутить?</div>
+            <div class="prize-info-sub">Нажми кнопку и испытай удачу!</div>
         </div>
 
+        <!-- Бейджи статуса -->
         <div class="badges">
-            <span class="free-badge" id="freeBadge">🆓 ✅</span>
-            <span class="extra-badge" id="extraBadge">✨ 0</span>
+            <div class="badge free" id="freeBadge">
+                <span>🆓</span>
+                <span>Бесплатный</span>
+                <span>✅</span>
+            </div>
+            <div class="badge extra" id="extraBadge">
+                <span>✨</span>
+                <span>Дополнительных</span>
+                <span>0</span>
+            </div>
         </div>
 
-        <button class="spin-btn" id="spinBtn" onclick="spinWheel()">
+        <!-- Кнопка кручения -->
+        <button class="action-btn" id="spinBtn" onclick="spinWheel()">
             🎡 КРУТИТЬ
         </button>
-        
-        <button class="show-prizes-btn" onclick="togglePrizesList()">
-            📋 Показать все призы
-        </button>
-        
-        <div class="prizes-list" id="prizesList">
-            <div style="font-weight: bold; margin-bottom: 5px;">🎁 Все призы:</div>
+
+        <!-- Выпадающий список призов -->
+        <div class="prizes-dropdown">
+            <button class="dropdown-btn" onclick="togglePrizes()">
+                <span>📋</span>
+                <span>Показать все призы</span>
+                <span>▼</span>
+            </button>
             <div class="prizes-grid" id="prizesGrid"></div>
         </div>
 
-        <button class="back-btn" onclick="closeApp()">
-            ◀️ НАЗАД
+        <!-- Кнопка назад -->
+        <button class="secondary-btn" onclick="closeApp()">
+            ◀️ НАЗАД В ПРОФИЛЬ
         </button>
     </div>
 
@@ -361,42 +600,46 @@
         let isSpinning = false;
         let totalSpins = 0;
 
-        // Призы
+        // Призы с эмодзи и короткими названиями
         const prizes = [
-            { name: '1 час', value: 60, color: '#FF6B6B', short: '1ч' },
-            { name: '2 часа', value: 120, color: '#4ECDC4', short: '2ч' },
-            { name: '3 часа', value: 180, color: '#45B7D1', short: '3ч' },
-            { name: '6 часов', value: 360, color: '#96CEB4', short: '6ч' },
-            { name: '2 слота', value: 2, color: '#FFE194', short: '2сл' },
-            { name: 'Лотерея', value: 1, color: '#D4A5A5', short: 'лот' },
-            { name: '+1 прокрут', value: 1, color: '#9B59B6', short: '+1' },
-            { name: 'Промокод', value: 50, color: '#F1C40F', short: 'пром' },
-            { name: '25 грн', value: 25, color: '#E67E22', short: '25₴' },
-            { name: '50 грн', value: 50, color: '#2ECC71', short: '50₴' }
+            { name: '1 час', value: 60, color: '#FF6B6B', emoji: '⏱️', short: '1ч' },
+            { name: '2 часа', value: 120, color: '#4ECDC4', emoji: '⏱️', short: '2ч' },
+            { name: '3 часа', value: 180, color: '#45B7D1', emoji: '⏱️', short: '3ч' },
+            { name: '6 часов', value: 360, color: '#96CEB4', emoji: '⏱️', short: '6ч' },
+            { name: '2 слота', value: 2, color: '#FFE194', emoji: '🧩', short: '2сл' },
+            { name: 'Лотерея', value: 1, color: '#D4A5A5', emoji: '🎰', short: 'лот' },
+            { name: '+1 прокрут', value: 1, color: '#9B59B6', emoji: '✨', short: '+1' },
+            { name: 'Промокод', value: 50, color: '#F1C40F', emoji: '🎟️', short: 'пром' },
+            { name: '25 грн', value: 25, color: '#E67E22', emoji: '💰', short: '25₴' },
+            { name: '50 грн', value: 50, color: '#2ECC71', emoji: '💰', short: '50₴' }
         ];
 
         tg.ready();
         tg.expand();
         tg.MainButton.hide();
 
-        // Заполняем список призов
-        function fillPrizesList() {
+        // Заполнение списка призов
+        function fillPrizesGrid() {
             const grid = document.getElementById('prizesGrid');
             grid.innerHTML = '';
-            prizes.forEach((prize, index) => {
-                const item = document.createElement('div');
-                item.className = 'prize-item';
-                item.innerHTML = `
+            prizes.forEach((prize) => {
+                const card = document.createElement('div');
+                card.className = 'prize-card';
+                card.innerHTML = `
                     <div class="prize-color" style="background: ${prize.color};"></div>
-                    <span>${prize.name}</span>
+                    <div class="prize-name">${prize.emoji} ${prize.name}</div>
                 `;
-                grid.appendChild(item);
+                grid.appendChild(card);
             });
         }
 
-        function togglePrizesList() {
-            const list = document.getElementById('prizesList');
-            list.classList.toggle('visible');
+        function togglePrizes() {
+            const grid = document.getElementById('prizesGrid');
+            grid.classList.toggle('visible');
+            const btn = document.querySelector('.dropdown-btn span:last-child');
+            if (btn) {
+                btn.textContent = grid.classList.contains('visible') ? '▲' : '▼';
+            }
         }
 
         function getUrlParams() {
@@ -408,20 +651,32 @@
 
                 canSpin = canSpinFree;
 
-                document.getElementById('freeBadge').innerHTML = canSpinFree ? '🆓 ✅' : '🆓 ❌';
-                document.getElementById('extraBadge').innerHTML = `✨ ${extraSpins}`;
+                // Обновляем бейджи
+                document.getElementById('freeBadge').innerHTML = `
+                    <span>🆓</span>
+                    <span>Бесплатный</span>
+                    <span>${canSpinFree ? '✅' : '❌'}</span>
+                `;
+                
+                document.getElementById('extraBadge').innerHTML = `
+                    <span>✨</span>
+                    <span>Дополнительных</span>
+                    <span>${extraSpins}</span>
+                `;
                 
                 loadStats();
                 updateSpinButton();
             } catch (e) {
-                console.error('Error:', e);
+                console.error('Error parsing URL:', e);
             }
         }
 
         function loadStats() {
             try {
-                const saved = localStorage.getItem(`wheel_stats_${userId}`);
-                if (saved) totalSpins = parseInt(saved) || 0;
+                const saved = localStorage.getItem(`spamlordy_wheel_${userId}`);
+                if (saved) {
+                    totalSpins = parseInt(saved) || 0;
+                }
                 document.getElementById('totalSpins').textContent = totalSpins;
                 document.getElementById('freeSpins').textContent = canSpin ? '1' : '0';
                 document.getElementById('extraSpins').textContent = extraSpins;
@@ -431,7 +686,7 @@
         function saveStats() {
             try {
                 if (userId) {
-                    localStorage.setItem(`wheel_stats_${userId}`, totalSpins.toString());
+                    localStorage.setItem(`spamlordy_wheel_${userId}`, totalSpins.toString());
                 }
             } catch (e) {}
         }
@@ -443,7 +698,7 @@
                 spinType = 'free';
                 btn.disabled = false;
             } else if (extraSpins > 0) {
-                btn.innerHTML = `✨ КРУТИТЬ (${extraSpins})`;
+                btn.innerHTML = `✨ КРУТИТЬ (осталось ${extraSpins})`;
                 spinType = 'extra';
                 btn.disabled = false;
             } else {
@@ -452,11 +707,13 @@
             }
         }
 
-        // Упрощенное создание колеса
+        // Создание сегментов колеса
         function createWheelSegments() {
             const wheel = document.getElementById('wheel');
+            // Сохраняем центр
+            const center = wheel.querySelector('.wheel-center');
             wheel.innerHTML = '';
-
+            
             const anglePerPrize = 360 / prizes.length;
 
             prizes.forEach((prize, index) => {
@@ -467,13 +724,21 @@
                 const rotateAngle = index * anglePerPrize;
                 segment.style.transform = `rotate(${rotateAngle}deg) skewY(${90 - anglePerPrize}deg)`;
 
-                const span = document.createElement('span');
-                span.style.transform = `rotate(${anglePerPrize / 2}deg) skewY(-${90 - anglePerPrize}deg)`;
-                span.textContent = prize.short;
+                const content = document.createElement('div');
+                content.className = 'segment-content';
+                content.style.transform = `rotate(${anglePerPrize / 2}deg) skewY(-${90 - anglePerPrize}deg)`;
+                
+                content.innerHTML = `
+                    <span class="prize-emoji">${prize.emoji}</span>
+                    <span class="prize-text">${prize.short}</span>
+                `;
 
-                segment.appendChild(span);
+                segment.appendChild(content);
                 wheel.appendChild(segment);
             });
+            
+            // Возвращаем центр
+            wheel.appendChild(center);
         }
 
         function getRandomPrize() {
@@ -488,7 +753,7 @@
                     return {
                         index: i,
                         prize: prizes[i],
-                        rotation: 360 * 5 + (i * (360 / prizes.length)) + (360 / prizes.length / 2)
+                        rotation: 360 * 5 + (i * (360 / prizes.length)) + (360 / prizes.length / 2) + (Math.random() * 10 - 5)
                     };
                 }
             }
@@ -501,24 +766,31 @@
             let currentSpinType = spinType;
 
             if (currentSpinType === 'free' && !canSpin) {
-                tg.showAlert('❌ Бесплатный прокрут уже использован!');
+                tg.showAlert('❌ Бесплатный прокрут уже использован на этой неделе!');
                 return;
             }
 
             if (currentSpinType === 'extra' && extraSpins <= 0) {
-                tg.showAlert('❌ Нет дополнительных прокрутов!');
+                tg.showAlert('❌ У вас нет дополнительных прокрутов!');
                 return;
             }
 
             isSpinning = true;
+            const wheel = document.getElementById('wheel');
+            wheel.classList.add('spinning');
             document.getElementById('spinBtn').disabled = true;
-            document.getElementById('prizeInfo').innerHTML = '🎡 Крутим...';
+            
+            document.getElementById('prizeInfo').innerHTML = `
+                <div class="prize-info-main">🎡 Крутим колесо...</div>
+                <div class="prize-info-sub">Секундочку, выбираем приз!</div>
+            `;
 
             const result = getRandomPrize();
-            const wheel = document.getElementById('wheel');
             wheel.style.transform = `rotate(${result.rotation}deg)`;
 
             setTimeout(() => {
+                wheel.classList.remove('spinning');
+                
                 tg.sendData(JSON.stringify({
                     type: currentSpinType,
                     prize: {
@@ -530,15 +802,26 @@
                 totalSpins++;
                 document.getElementById('totalSpins').textContent = totalSpins;
                 
-                document.getElementById('prizeInfo').innerHTML = `🎉 ${result.prize.name}!`;
+                document.getElementById('prizeInfo').innerHTML = `
+                    <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.name}!</div>
+                    <div class="prize-info-sub">${getPrizeDescription(result.prize)}</div>
+                `;
 
                 if (currentSpinType === 'free') {
                     canSpin = false;
-                    document.getElementById('freeBadge').innerHTML = '🆓 ❌';
+                    document.getElementById('freeBadge').innerHTML = `
+                        <span>🆓</span>
+                        <span>Бесплатный</span>
+                        <span>❌</span>
+                    `;
                     document.getElementById('freeSpins').textContent = '0';
                 } else {
                     extraSpins--;
-                    document.getElementById('extraBadge').innerHTML = `✨ ${extraSpins}`;
+                    document.getElementById('extraBadge').innerHTML = `
+                        <span>✨</span>
+                        <span>Дополнительных</span>
+                        <span>${extraSpins}</span>
+                    `;
                     document.getElementById('extraSpins').textContent = extraSpins;
                 }
 
@@ -546,7 +829,23 @@
                 updateSpinButton();
                 isSpinning = false;
 
-            }, 3000);
+            }, 3500);
+        }
+
+        function getPrizeDescription(prize) {
+            switch(prize.name) {
+                case '1 час': return '✅ +60 минут доступа';
+                case '2 часа': return '✅ +120 минут доступа';
+                case '3 часа': return '✅ +180 минут доступа';
+                case '6 часов': return '✅ +360 минут доступа';
+                case '2 слота': return '✅ +2 слота на 2 недели';
+                case 'Лотерея': return '🎰 Билет в лотерею';
+                case '+1 прокрут': return '✨ Ещё один шанс';
+                case 'Промокод': return '🎟 Промокод на 50 грн';
+                case '25 грн': return '💰 25 грн на баланс';
+                case '50 грн': return '💰 50 грн на баланс';
+                default: return '🎁 Приз получен!';
+            }
         }
 
         function closeApp() {
@@ -554,11 +853,27 @@
         }
 
         // Инициализация
-        fillPrizesList();
+        fillPrizesGrid();
         createWheelSegments();
         getUrlParams();
 
-        window.addEventListener('resize', createWheelSegments);
+        // Обновляем колесо при изменении размера
+        window.addEventListener('resize', () => {
+            createWheelSegments();
+        });
+
+        // Закрытие по свайпу вниз
+        let touchStartY = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndY = e.changedTouches[0].clientY;
+            if (touchEndY - touchStartY > 80) {
+                closeApp();
+            }
+        });
     </script>
 </body>
 </html>
