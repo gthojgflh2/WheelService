@@ -21,19 +21,36 @@
             justify-content: center;
             align-items: center;
             color: white;
+            padding: 10px;
         }
 
         .container {
             width: 100%;
-            max-width: 400px;
-            padding: 20px;
+            max-width: 420px;
+            padding: 15px;
             text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
+            font-size: 32px;
+            margin-bottom: 15px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        h1 span {
+            background: rgba(255,215,0,0.3);
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 16px;
+            border: 1px solid gold;
         }
 
         .stats {
@@ -44,27 +61,37 @@
             backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-around;
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
         .stat-item {
             text-align: center;
+            flex: 1;
         }
 
         .stat-value {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 5px 10px;
+            display: inline-block;
+            min-width: 60px;
         }
 
         .stat-label {
             font-size: 12px;
-            opacity: 0.8;
+            opacity: 0.9;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .wheel-container {
             position: relative;
-            width: 300px;
-            height: 300px;
-            margin: 0 auto 30px;
+            width: 280px;
+            height: 280px;
+            margin: 20px auto 30px;
             cursor: pointer;
         }
 
@@ -72,11 +99,11 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: gold;
             position: relative;
             overflow: hidden;
             transition: transform 3s cubic-bezier(0.25, 0.1, 0.15, 1);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 0 30px rgba(255,215,0,0.3);
+            border: 4px solid gold;
         }
 
         .wheel::after {
@@ -90,21 +117,34 @@
             background: white;
             border-radius: 50%;
             z-index: 10;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border: 3px solid gold;
         }
 
         .pointer {
             position: absolute;
-            top: -15px;
+            top: -20px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-top: 40px solid red;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid #ff4444;
             z-index: 20;
-            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 8px 8px rgba(0,0,0,0.4));
+        }
+
+        .pointer::after {
+            content: '';
+            position: absolute;
+            top: -45px;
+            left: -8px;
+            width: 16px;
+            height: 16px;
+            background: gold;
+            border-radius: 50%;
+            box-shadow: 0 0 15px gold;
         }
 
         .segment {
@@ -119,73 +159,117 @@
             align-items: center;
             color: white;
             font-weight: bold;
+            font-size: 16px;
+            text-shadow: 2px 2px 3px black;
+            padding-left: 35px;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-sizing: border-box;
+        }
+
+        .segment span {
+            transform: rotate(45deg);
+            display: block;
+            text-align: center;
+            width: 100%;
             font-size: 14px;
-            text-shadow: 1px 1px 2px black;
-            padding-left: 30px;
+            line-height: 1.2;
+            word-break: break-word;
+            max-width: 70px;
         }
 
         .prize-info {
-            font-size: 18px;
-            margin: 20px 0;
+            font-size: 20px;
+            margin: 15px 0;
             min-height: 60px;
             font-weight: bold;
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 50px;
+            border: 1px solid gold;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
         }
 
         .spin-btn {
             background: linear-gradient(45deg, #ff6b6b, #ff8e53);
             color: white;
             border: none;
-            padding: 15px 40px;
-            border-radius: 50px;
-            font-size: 20px;
+            padding: 18px 40px;
+            border-radius: 60px;
+            font-size: 22px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            border: 2px solid gold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
         .spin-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.97);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
 
         .spin-btn:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
+            background: linear-gradient(45deg, #999, #777);
         }
 
         .back-btn {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.15);
             color: white;
-            border: 2px solid white;
-            padding: 10px 20px;
+            border: 2px solid rgba(255,255,255,0.5);
+            padding: 12px 20px;
             border-radius: 50px;
-            font-size: 16px;
+            font-size: 18px;
             cursor: pointer;
             width: 100%;
             backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .back-btn:active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(0.98);
+        }
+
+        .badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
         }
 
         .free-badge {
             background: #4CAF50;
             color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-left: 10px;
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 10px rgba(76,175,80,0.3);
         }
 
         .extra-badge {
             background: #FF9800;
             color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-        }
-
-        .spins-count {
-            margin-bottom: 10px;
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 4px 10px rgba(255,152,0,0.3);
         }
 
         @keyframes pulse {
@@ -197,11 +281,36 @@
         .pulse {
             animation: pulse 2s infinite;
         }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 10px gold; }
+            50% { box-shadow: 0 0 30px gold; }
+            100% { box-shadow: 0 0 10px gold; }
+        }
+
+        .wheel.spinning {
+            animation: glow 1s infinite;
+        }
+
+        /* Улучшенные цвета для сегментов */
+        .segment[data-prize="1 час"] { background: #FF6B6B; }
+        .segment[data-prize="2 часа"] { background: #4ECDC4; }
+        .segment[data-prize="3 часа"] { background: #45B7D1; }
+        .segment[data-prize="6 часов"] { background: #96CEB4; }
+        .segment[data-prize="2 слота"] { background: #FFE194; }
+        .segment[data-prize="Лотерея"] { background: #D4A5A5; }
+        .segment[data-prize="+1 прокрут"] { background: #9B59B6; }
+        .segment[data-prize="Промокод"] { background: #F1C40F; }
+        .segment[data-prize="25 грн"] { background: #E67E22; }
+        .segment[data-prize="50 грн"] { background: #2ECC71; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎡 Колесо фортуны</h1>
+        <h1>
+            🎡 Колесо фортуны
+            <span>VIP</span>
+        </h1>
 
         <div class="stats">
             <div class="stat-item">
@@ -210,7 +319,7 @@
             </div>
             <div class="stat-item">
                 <div class="stat-value" id="extraSpins">0</div>
-                <div class="stat-label">Дополнительных</div>
+                <div class="stat-label">Доп. прокрутов</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value" id="totalSpins">0</div>
@@ -223,15 +332,25 @@
             <div class="wheel" id="wheel"></div>
         </div>
 
-        <div class="prize-info" id="prizeInfo">Нажмите кнопку, чтобы крутить!</div>
-
-        <div class="spins-count">
-            <span id="freeBadge" class="free-badge">🆓 Бесплатный: ✅</span>
-            <span id="extraBadge" class="extra-badge">✨ Дополнительных: 0</span>
+        <div class="prize-info" id="prizeInfo">
+            🎯 Нажми кнопку, чтобы крутить!
         </div>
 
-        <button class="spin-btn" id="spinBtn" onclick="spinWheel()">🎡 КРУТИТЬ</button>
-        <button class="back-btn" onclick="closeApp()">◀️ НАЗАД В ПРОФИЛЬ</button>
+        <div class="badges">
+            <span class="free-badge" id="freeBadge">
+                🆓 Бесплатный: ✅
+            </span>
+            <span class="extra-badge" id="extraBadge">
+                ✨ Доп. прокрутов: 0
+            </span>
+        </div>
+
+        <button class="spin-btn" id="spinBtn" onclick="spinWheel()">
+            🎡 КРУТИТЬ
+        </button>
+        <button class="back-btn" onclick="closeApp()">
+            ◀️ НАЗАД В ПРОФИЛЬ
+        </button>
     </div>
 
     <script>
@@ -241,19 +360,20 @@
         let canSpin = true;
         let extraSpins = 0;
         let isSpinning = false;
+        let totalSpins = 0;
 
         // Призы и их цвета
         const prizes = [
-            { name: '1 час', value: 60, color: '#FF6B6B' },
-            { name: '2 часа', value: 120, color: '#4ECDC4' },
-            { name: '3 часа', value: 180, color: '#45B7D1' },
-            { name: '6 часов', value: 360, color: '#96CEB4' },
-            { name: '2 слота', value: 2, color: '#FFE194' },
-            { name: 'Лотерея', value: 1, color: '#D4A5A5' },
-            { name: '+1 прокрут', value: 1, color: '#9B59B6' },
-            { name: 'Промокод', value: 50, color: '#F1C40F' },
-            { name: '25 грн', value: 25, color: '#E67E22' },
-            { name: '50 грн', value: 50, color: '#2ECC71' }
+            { name: '1 час', value: 60, color: '#FF6B6B', emoji: '⏱️' },
+            { name: '2 часа', value: 120, color: '#4ECDC4', emoji: '⏱️' },
+            { name: '3 часа', value: 180, color: '#45B7D1', emoji: '⏱️' },
+            { name: '6 часов', value: 360, color: '#96CEB4', emoji: '⏱️' },
+            { name: '2 слота', value: 2, color: '#FFE194', emoji: '🧩' },
+            { name: 'Лотерея', value: 1, color: '#D4A5A5', emoji: '🎰' },
+            { name: '+1 прокрут', value: 1, color: '#9B59B6', emoji: '✨' },
+            { name: 'Промокод', value: 50, color: '#F1C40F', emoji: '🎟️' },
+            { name: '25 грн', value: 25, color: '#E67E22', emoji: '💰' },
+            { name: '50 грн', value: 50, color: '#2ECC71', emoji: '💰' }
         ];
 
         // Настройки Telegram WebApp
@@ -263,18 +383,48 @@
 
         // Получаем данные из URL
         function getUrlParams() {
-            const params = new URLSearchParams(window.location.search);
-            userId = params.get('user');
-            const canSpinFree = params.get('canSpin') === 'true';
-            extraSpins = parseInt(params.get('extraSpins') || '0');
+            try {
+                const params = new URLSearchParams(window.location.search);
+                userId = params.get('user');
+                const canSpinFree = params.get('canSpin') === 'true';
+                extraSpins = parseInt(params.get('extraSpins') || '0');
 
-            canSpin = canSpinFree;
+                canSpin = canSpinFree;
 
-            document.getElementById('freeBadge').innerHTML = canSpinFree ?
-                '🆓 Бесплатный: ✅' : '🆓 Бесплатный: ❌';
-            document.getElementById('extraBadge').innerHTML = `✨ Дополнительных: ${extraSpins}`;
+                document.getElementById('freeBadge').innerHTML = canSpinFree ?
+                    '🆓 Бесплатный: ✅' : '🆓 Бесплатный: ❌';
+                document.getElementById('extraBadge').innerHTML = `✨ Доп. прокрутов: ${extraSpins}`;
 
-            updateSpinButton();
+                // Загружаем статистику из localStorage
+                loadStats();
+                updateSpinButton();
+            } catch (e) {
+                console.error('Error parsing URL params:', e);
+            }
+        }
+
+        function loadStats() {
+            try {
+                const saved = localStorage.getItem(`wheel_stats_${userId}`);
+                if (saved) {
+                    totalSpins = parseInt(saved) || 0;
+                }
+                document.getElementById('totalSpins').textContent = totalSpins;
+                document.getElementById('freeSpins').textContent = canSpin ? '1' : '0';
+                document.getElementById('extraSpins').textContent = extraSpins;
+            } catch (e) {
+                console.error('Error loading stats:', e);
+            }
+        }
+
+        function saveStats() {
+            try {
+                if (userId) {
+                    localStorage.setItem(`wheel_stats_${userId}`, totalSpins.toString());
+                }
+            } catch (e) {
+                console.error('Error saving stats:', e);
+            }
         }
 
         function updateSpinButton() {
@@ -282,9 +432,11 @@
             if (canSpin) {
                 btn.innerHTML = '🎡 КРУТИТЬ БЕСПЛАТНО';
                 spinType = 'free';
+                btn.disabled = false;
             } else if (extraSpins > 0) {
-                btn.innerHTML = `✨ КРУТИТЬ ДОП. ПРОКРУТ (${extraSpins} шт)`;
+                btn.innerHTML = `✨ КРУТИТЬ ДОП. ПРОКРУТ (${extraSpins})`;
                 spinType = 'extra';
+                btn.disabled = false;
             } else {
                 btn.innerHTML = '❌ НЕТ ПРОКРУТОВ';
                 btn.disabled = true;
@@ -301,15 +453,29 @@
             prizes.forEach((prize, index) => {
                 const segment = document.createElement('div');
                 segment.className = 'segment';
+                segment.setAttribute('data-prize', prize.name);
                 segment.style.backgroundColor = prize.color;
-                segment.style.transform = `rotate(${index * anglePerPrize}deg) skewY(${90 - anglePerPrize}deg)`;
+                
+                // Вычисляем углы для правильного отображения
+                const rotateAngle = index * anglePerPrize;
+                segment.style.transform = `rotate(${rotateAngle}deg) skewY(${90 - anglePerPrize}deg)`;
 
                 const span = document.createElement('span');
+                // Компенсируем skew для текста
                 span.style.transform = `rotate(${anglePerPrize / 2}deg) skewY(-${90 - anglePerPrize}deg)`;
-                span.style.display = 'block';
+                span.style.display = 'flex';
+                span.style.flexDirection = 'column';
+                span.style.alignItems = 'center';
+                span.style.justifyContent = 'center';
+                span.style.height = '100%';
                 span.style.width = '100%';
-                span.style.textAlign = 'center';
-                span.textContent = prize.name;
+                span.style.fontSize = window.innerWidth < 380 ? '12px' : '14px';
+                
+                // Добавляем эмодзи и текст
+                span.innerHTML = `
+                    <span style="font-size: 20px; margin-bottom: 2px;">${prize.emoji}</span>
+                    <span>${prize.name}</span>
+                `;
 
                 segment.appendChild(span);
                 wheel.appendChild(segment);
@@ -318,6 +484,7 @@
 
         // Выбор случайного приза
         function getRandomPrize() {
+            // Веса призов (чем больше число, тем выше шанс)
             const weights = [30, 20, 15, 5, 2, 4, 8, 1, 12, 3];
             const totalWeight = weights.reduce((a, b) => a + b, 0);
             let random = Math.random() * totalWeight;
@@ -326,10 +493,12 @@
             for (let i = 0; i < weights.length; i++) {
                 sum += weights[i];
                 if (random < sum) {
+                    // Добавляем случайное смещение для реалистичности
+                    const extraRotation = Math.random() * 20 - 10;
                     return {
                         index: i,
                         prize: prizes[i],
-                        rotation: 360 * 5 + (i * (360 / prizes.length)) + (360 / prizes.length / 2)
+                        rotation: 360 * 5 + (i * (360 / prizes.length)) + (360 / prizes.length / 2) + extraRotation
                     };
                 }
             }
@@ -353,17 +522,21 @@
             }
 
             isSpinning = true;
+            const wheel = document.getElementById('wheel');
+            wheel.classList.add('spinning');
             document.getElementById('spinBtn').disabled = true;
-            document.getElementById('prizeInfo').innerHTML = '🎡 Крутим колесо...';
+            document.getElementById('prizeInfo').innerHTML = '🎡 Крутим колесо... 🔮';
 
             const result = getRandomPrize();
-            const wheel = document.getElementById('wheel');
 
             // Анимируем вращение
             wheel.style.transform = `rotate(${result.rotation}deg)`;
 
             // Отправляем результат в бот
             setTimeout(() => {
+                wheel.classList.remove('spinning');
+                
+                // Отправляем данные в бот
                 tg.sendData(JSON.stringify({
                     type: currentSpinType,
                     prize: {
@@ -372,25 +545,33 @@
                     }
                 }));
 
+                // Обновляем статистику
+                totalSpins++;
+                document.getElementById('totalSpins').textContent = totalSpins;
+                
+                // Показываем результат
                 document.getElementById('prizeInfo').innerHTML = `
-                    🎉 <b>${result.prize.name}!</b><br>
-                    <small>${getPrizeDescription(result.prize)}</small>
+                    🎉 <b>${result.prize.emoji} ${result.prize.name}!</b><br>
+                    <span style="font-size: 14px; opacity: 0.9;">${getPrizeDescription(result.prize)}</span>
                 `;
 
-                // Обновляем статистику
+                // Обновляем статистику прокрутов
                 if (currentSpinType === 'free') {
                     canSpin = false;
                     document.getElementById('freeBadge').innerHTML = '🆓 Бесплатный: ❌';
+                    document.getElementById('freeSpins').textContent = '0';
                 } else {
                     extraSpins--;
-                    document.getElementById('extraBadge').innerHTML = `✨ Дополнительных: ${extraSpins}`;
+                    document.getElementById('extraBadge').innerHTML = `✨ Доп. прокрутов: ${extraSpins}`;
+                    document.getElementById('extraSpins').textContent = extraSpins;
                 }
 
+                saveStats();
                 updateSpinButton();
 
                 setTimeout(() => {
                     isSpinning = false;
-                }, 1000);
+                }, 500);
 
             }, 3000);
         }
@@ -415,6 +596,11 @@
             tg.close();
         }
 
+        // Обработка изменения размера экрана
+        window.addEventListener('resize', () => {
+            createWheelSegments();
+        });
+
         // Инициализация
         createWheelSegments();
         getUrlParams();
@@ -422,6 +608,27 @@
         // Обработка данных от бота
         tg.onEvent('mainButtonClicked', function() {
             tg.sendData(JSON.stringify({ action: 'close' }));
+        });
+
+        // Добавляем поддержку свайпов для мобильных
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+
+            // Если свайп вниз - закрываем
+            if (Math.abs(dy) > Math.abs(dx) && dy > 50) {
+                closeApp();
+            }
         });
     </script>
 </body>
