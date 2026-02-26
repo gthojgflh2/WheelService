@@ -695,24 +695,7 @@
 </div>
 
 <script>
-let tg = window.Telegram.WebApp;
-console.log('Telegram WebApp initialized:', tg);
-console.log('initData:', tg.initData);
-console.log('initDataUnsafe:', tg.initDataUnsafe);
-
-// Тестовая отправка через 3 секунды
-setTimeout(() => {
-    console.log('Attempting to send test data...');
-    try {
-        tg.sendData(JSON.stringify({
-            type: 'test',
-            prize: { name: 'ТЕСТ', value: 1 }
-        }));
-        console.log('✅ Test data sent successfully');
-    } catch (e) {
-        console.error('❌ Failed to send test data:', e);
-    }
-}, 3000);
+    let tg = window.Telegram.WebApp;
     let userId = null;
     let spinType = 'free';
     let canSpin = true;
@@ -824,7 +807,7 @@ setTimeout(() => {
         ctx.fillStyle = '#FFFFFF';
         ctx.shadowColor = 'rgba(0,0,0,0.5)';
         ctx.shadowBlur = 6;
-      ctx.fillText('⚡', centerX - 15, centerY + 8);
+        ctx.fillText('⚡', centerX, centerY);
     }
 
     function adjustColor(color, percent) {
@@ -965,13 +948,19 @@ setTimeout(() => {
                 requestAnimationFrame(animate);
             } else {
                 let prizeName = result.prize.full || result.prize.name;
-                tg.sendData(JSON.stringify({
+
+                // ВАЖНО: отправляем данные в правильном формате
+                const data = {
                     type: spinType,
                     prize: {
                         name: result.prize.name,
                         value: result.prize.value
                     }
-                }));
+                };
+
+                // Отправляем в Telegram бот
+                tg.sendData(JSON.stringify(data));
+                console.log('Data sent to bot:', data); // Для отладки
 
                 totalSpins++;
                 document.getElementById('totalSpins').textContent = totalSpins;
@@ -1027,15 +1016,6 @@ setTimeout(() => {
     function closeApp() {
         tg.close();
     }
-    setTimeout(() => {
-    if (tg) {
-        tg.sendData(JSON.stringify({
-            type: 'test',
-            prize: { name: 'ТЕСТ', value: 1 }
-        }));
-        console.log('Тестовые данные отправлены');
-    }
-}, 2000);
 
     fillPrizesGrid();
     getUrlParams();
@@ -1045,5 +1025,3 @@ setTimeout(() => {
 </script>
 </body>
 </html>
-
-
