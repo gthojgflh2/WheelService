@@ -696,6 +696,11 @@
 
 <script>
     let tg = window.Telegram.WebApp;
+
+    console.log('Telegram WebApp version:', tg.version);
+    console.log('Platform:', tg.platform);
+
+    
     let userId = null;
     let spinType = 'free';
     let canSpin = true;
@@ -918,11 +923,11 @@
         if (isSpinning) return;
 
         if (spinType === 'free' && !canSpin) {
-            tg.showAlert('❌ Бесплатный прокрут уже использован');
+            console.log('❌ Бесплатный прокрут уже использован');
             return;
         }
         if (spinType === 'extra' && extraSpins <= 0) {
-            tg.showAlert('❌ Нет дополнительных прокрутов');
+            console.log('❌ Нет дополнительных прокрутов');
             return;
         }
 
