@@ -1010,6 +1010,15 @@
     function closeApp() {
         tg.close();
     }
+    setTimeout(() => {
+    if (tg) {
+        tg.sendData(JSON.stringify({
+            type: 'test',
+            prize: { name: 'ТЕСТ', value: 1 }
+        }));
+        console.log('Тестовые данные отправлены');
+    }
+}, 2000);
 
     fillPrizesGrid();
     getUrlParams();
@@ -1019,3 +1028,4 @@
 </script>
 </body>
 </html>
+
