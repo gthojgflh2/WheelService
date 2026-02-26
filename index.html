@@ -959,14 +959,32 @@
                 };
 
                 // Отправляем в Telegram бот
-                fetch('https://api.telegram.org/bot' + tg.initDataUnsafe?.botToken + '/sendMessage', {
+                // Получаем токен из URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const botToken = urlParams.get('botToken');
+
+// Отправляем в Telegram бот через API
+                fetch('https://api.telegram.org/bot' + botToken + '/sendMessage', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         chat_id: userId,
                         text: 'WHEEL_RESULT: ' + JSON.stringify(data)
                     })
-                });
+                })
+                    .then(response => response.json())
+                    .then(responseData => {
+                        console.log('API Response:', responseData);
+                        if (responseData.ok) {
+                            tg.showAlert('✅ Приз отправлен! Проверь бота');
+                        } else {
+                            tg.showAlert('❌ Ошибка: ' + responseData.description);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                        tg.showAlert('❌ Ошибка отправки: ' + error.message);
+                    });
                 console.log('Data sent to bot:', data); // Для отладки
 
                 totalSpins++;
