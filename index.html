@@ -1,30 +1,98 @@
-function sendTest() {
-    const data = {
-        type: 'free',
-        prize: {
-            name: 'ТЕСТ',
-            value: 999
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <button onclick="sendViaWebApp()">Отправить через WebApp</button>
+    <br><br>
+    <button onclick="sendViaAPI()">Отправить через API</button>
+    <br><br>
+    <div id="status"></div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        let userId = null;
+        
+        tg.ready();
+        tg.expand();
+        
+        // Получаем userId из URL
+        function getUserId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('user') || '1158326217'; // запасной вариант
         }
-    };
-    
-    // Вместо tg.sendData используем fetch
-    fetch('https://api.telegram.org/bot8655661017:AAFrRtilRKCqDYbcC66gujTkcvHCHFIUrX8/sendMessage', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            chat_id: 1158326217,
-            text: 'WHEEL_RESULT: ' + JSON.stringify(data)
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('API Response:', data);
-        tg.showAlert('✅ Отправлено через API!');
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        tg.showAlert('❌ Ошибка: ' + error);
-    });
-}
+        
+        userId = getUserId();
+        console.log('User ID:', userId);
+        
+        // 1. Отправка через WebApp (стандартный способ)
+        function sendViaWebApp() {
+            const data = {
+                type: 'free',
+                prize: {
+                    name: 'ТЕСТ',
+                    value: 999
+                }
+            };
+            
+            console.log('Sending via WebApp:', data);
+            tg.sendData(JSON.stringify(data));
+            tg.showAlert('✅ Данные отправлены через WebApp!');
+            document.getElementById('status').innerHTML = '✅ Отправлено через WebApp';
+        }
+        
+        // 2. Отправка через API (прямой запрос)
+        function sendViaAPI() {
+            const data = {
+                type: 'free',
+                prize: {
+                    name: 'ТЕСТ API',
+                    value: 9999
+                }
+            };
+            
+            // Токен тестового бота
+            const botToken = '8655661017:AAFrRtilRKCqDYbcC66gujTkcvHCHFIUrX8';
+            
+            // URL для отправки
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+            
+            console.log('Sending via API:', data);
+            document.getElementById('status').innerHTML = '⏳ Отправка через API...';
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chat_id: userId,
+                    text: 'WHEEL_RESULT: ' + JSON.stringify(data)
+                })
+            })
+            .then(response => response.json())
+            .then(responseData => {
+                console.log('API Response:', responseData);
+                if (responseData.ok) {
+                    tg.showAlert('✅ Отправлено через API!');
+                    document.getElementById('status').innerHTML = '✅ Отправлено через API';
+                } else {
+                    tg.showAlert('❌ Ошибка API: ' + responseData.description);
+                    document.getElementById('status').innerHTML = '❌ Ошибка: ' + responseData.description;
+                }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                tg.showAlert('❌ Ошибка: ' + error.message);
+                document.getElementById('status').innerHTML = '❌ Ошибка: ' + error.message;
+            });
+        }
+        
+        // Информация о версии
+        console.log('Telegram WebApp version:', tg.version);
+        console.log('Platform:', tg.platform);
+    </script>
+</body>
+</html>
