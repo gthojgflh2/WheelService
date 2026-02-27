@@ -6,6 +6,7 @@
     <title>Spamlordy | Колесо фортуны</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* СТИЛИ ТЕ ЖЕ - ОСТАВЛЯЕМ КАК ЕСТЬ */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
         * {
@@ -690,7 +691,7 @@
     <div class="prizes-grid" id="prizesGrid"></div>
 
     <button class="back-btn" onclick="closeApp()">
-        ◀️ Назад
+        ◀️ Закрыть
     </button>
 </div>
 
@@ -698,7 +699,6 @@
     let tg = window.Telegram.WebApp;
 
     console.log('Telegram WebApp version:', tg.version);
-    console.log('Platform:', tg.platform);
 
     // Расширяем на весь экран
     tg.ready();
@@ -711,7 +711,6 @@
     let isSpinning = false;
     let totalSpins = 0;
     let currentRotation = 0;
-    let spinTimeout = null;
 
     // Призы
     const prizes = [
@@ -971,13 +970,13 @@
             } else {
                 console.log('🎯 ВЫИГРЫШ:', result.prize.name);
                 
-                // СНАЧАЛА показываем результат пользователю
+                // Показываем результат пользователю
                 document.getElementById('prizeInfo').innerHTML = `
                     <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
                     <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
                 `;
                 
-                // Обновляем статистику
+                // ОБНОВЛЯЕМ СТАТИСТИКУ (НО НЕ ОТПРАВЛЯЕМ В БОТА)
                 totalSpins++;
                 document.getElementById('totalSpins').textContent = totalSpins;
                 
@@ -1002,22 +1001,9 @@
                 saveStats();
                 updateSpinButton();
                 
-                // Ждем 2 секунды, чтобы пользователь увидел результат
-                setTimeout(() => {
-                    // Теперь отправляем данные и закрываемся
-                    const data = {
-                        type: spinType,
-                        prize: {
-                            name: result.prize.name,
-                            value: result.prize.value
-                        }
-                    };
-                    
-                    tg.sendData(JSON.stringify(data));
-                    console.log('📤 Data sent:', data);
-                    
-                    // Telegram сам закроет WebView после sendData
-                }, 2000);
+                // МЕНЯЕМ ТЕКСТ КНОПКИ
+                document.getElementById('spinBtn').innerHTML = '✅ Готово! Можно закрыть';
+                document.getElementById('spinBtn').disabled = false;
                 
                 isSpinning = false;
             }
