@@ -971,12 +971,15 @@
 function spinWheel() {
     if (isSpinning) return;
 
+    // Проверяем на клиенте (быстрая проверка)
     if (spinType === 'free' && !canSpin) {
         console.log('❌ Бесплатный прокрут уже использован');
+        showError('Бесплатный прокрут уже использован');
         return;
     }
     if (spinType === 'extra' && extraSpins <= 0) {
         console.log('❌ Нет дополнительных прокрутов');
+        showError('Нет дополнительных прокрутов');
         return;
     }
 
@@ -1003,13 +1006,13 @@ function spinWheel() {
         } else {
             console.log('🎯 ВЫИГРЫШ:', result.prize.name);
 
-            // 1️⃣ СНАЧАЛА ПОКАЗЫВАЕМ РЕЗУЛЬТАТ
+            // Показываем результат
             document.getElementById('prizeInfo').innerHTML = `
                 <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
                 <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
             `;
 
-            // 2️⃣ ОБНОВЛЯЕМ СТАТИСТИКУ
+            // Обновляем статистику на клиенте
             totalSpins++;
             document.getElementById('totalSpins').textContent = totalSpins;
 
@@ -1034,9 +1037,11 @@ function spinWheel() {
             saveStats();
             updateSpinButton();
 
-            // 3️⃣ ЖДЕМ 10 СЕКУНД (Thread.sleep в JavaScript)
+            // Добавляем флаг, что прокрут использован
+            sessionStorage.setItem('lastSpin_' + userId, Date.now().toString());
+
+            // Ждем 3 секунды и отправляем данные
             setTimeout(() => {
-                // 4️⃣ ОТПРАВЛЯЕМ ДАННЫЕ (и WebView закроется)
                 const data = {
                     type: spinType,
                     prize: {
@@ -1045,16 +1050,63 @@ function spinWheel() {
                     }
                 };
 
+                // ФИНАЛЬНАЯ ПРОВЕРКА ПЕРЕД ОТПРАВКОЙ
+                if (spinType === 'free') {
+                    // Дополнительно проверяем на сервере через initData
+                    console.log('Отправка бесплатного прокрута...');
+                } else if (spinType === 'extra') {
+                    if (extraSpins < 0) {
+                        console.error('❌ Ошибка: отрицательное количество прокрутов');
+                        showError('Ошибка синхронизации');
+                        return;
+                    }
+                }
+
                 tg.sendData(JSON.stringify(data));
                 console.log('📤 Data sent after 10 seconds:', data);
                 
                 isSpinning = false;
-            }, 10000); // 10000 миллисекунд = 10 секунд
+            }, 10000);
         }
     }
 
     requestAnimationFrame(animate);
 }
+
+// Добавляем функцию для показа ошибок
+function showError(message) {
+    document.getElementById('prizeInfo').innerHTML = `
+        <div class="prize-info-main">❌ Ошибка</div>
+        <div class="prize-info-sub">${message}</div>
+    `;
+    
+    setTimeout(() => {
+        document.getElementById('prizeInfo').innerHTML = `
+            <div class="prize-info-main">🎯 Готов крутить?</div>
+            <div class="prize-info-sub">Нажми кнопку и испытай удачу</div>
+        `;
+    }, 3000);
+}
+
+// Добавляем проверку при загрузке страницы
+window.addEventListener('load', function() {
+    // Проверяем, не крутил ли пользователь недавно
+    const lastSpin = sessionStorage.getItem('lastSpin_' + userId);
+    if (lastSpin) {
+        const timeSinceLastSpin = Date.now() - parseInt(lastSpin);
+        if (timeSinceLastSpin < 10000) { // Если прошло меньше 10 секунд
+            console.log('⏳ Подождите перед следующим прокрутом');
+            document.getElementById('spinBtn').disabled = true;
+            
+            setTimeout(() => {
+                document.getElementById('spinBtn').disabled = false;
+                sessionStorage.removeItem('lastSpin_' + userId);
+            }, 10000 - timeSinceLastSpin);
+        } else {
+            sessionStorage.removeItem('lastSpin_' + userId);
+        }
+    }
+});
     function closeApp() {
         if (closeTimer) {
             clearInterval(closeTimer);
@@ -1071,4 +1123,5 @@ function spinWheel() {
 </script>
 </body>
 </html>
+
 
