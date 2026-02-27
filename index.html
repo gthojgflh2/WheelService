@@ -979,17 +979,18 @@
 function getRandomPrize() {
     const anglePerPrize = (Math.PI * 2) / prizes.length;
     const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
-    let random = Math.random() * totalWeight;
+
+    let randomValue = forcedRandom * totalWeight;
 
     let sum = 0;
     for (let i = 0; i < prizes.length; i++) {
         sum += prizes[i].weight;
-        if (random < sum) {
+        if (randomValue < sum) {
 
             const targetRotation =
                 currentRotation +
-                Math.PI * 2 * 10 +                       // 10 оборотов
-                (Math.PI * 2 - (i * anglePerPrize) - anglePerPrize / 2); // точный центр сектора
+                Math.PI * 2 * 10 +
+                (Math.PI * 2 - (i * anglePerPrize) - anglePerPrize / 2);
 
             return {
                 index: i,
@@ -998,6 +999,7 @@ function getRandomPrize() {
             };
         }
     }
+}
 
     // fallback
     return {
@@ -1032,5 +1034,6 @@ function getRandomPrize() {
 </script>
 </body>
 </html>
+
 
 
