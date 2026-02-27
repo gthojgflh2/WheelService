@@ -980,6 +980,11 @@ function getRandomPrize() {
     const anglePerPrize = (Math.PI * 2) / prizes.length;
     const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
 
+    // Если random не создан — создаём
+    if (forcedRandom === null) {
+        forcedRandom = Math.random();
+    }
+
     let randomValue = forcedRandom * totalWeight;
 
     let sum = 0;
@@ -998,6 +1003,15 @@ function getRandomPrize() {
                 rotation: targetRotation
             };
         }
+    }
+
+    // Fallback (на всякий случай)
+    return {
+        index: 0,
+        prize: prizes[0],
+        rotation: currentRotation + Math.PI * 2 * 10
+    };
+}
     }
 
 
@@ -1034,6 +1048,7 @@ function getRandomPrize() {
 </script>
 </body>
 </html>
+
 
 
 
