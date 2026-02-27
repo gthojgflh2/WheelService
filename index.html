@@ -10,16 +10,29 @@
             text-align: center;
             background: #1a1a1a;
             color: white;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        h3 {
+            color: gold;
+            margin-top: 10px;
         }
         .wheel-container {
-            margin: 30px 0;
+            margin: 20px 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .wheel {
-            width: 300px;
-            height: 300px;
+            width: 280px;
+            height: 280px;
             border-radius: 50%;
             border: 5px solid gold;
-            margin: 0 auto;
+            margin: 0 auto 20px;
             background: conic-gradient(
                 #ff6b6b 0deg 36deg,
                 #4ecdc4 36deg 72deg,
@@ -34,60 +47,102 @@
             );
             transition: transform 3s cubic-bezier(0.25, 0.1, 0.15, 1);
             cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
         }
         .wheel.spinning {
             transform: rotate(1440deg);
         }
+        .wheel.prize-1 { transform: rotate(18deg); }
+        .wheel.prize-2 { transform: rotate(54deg); }
+        .wheel.prize-3 { transform: rotate(90deg); }
+        .wheel.prize-4 { transform: rotate(126deg); }
+        .wheel.prize-5 { transform: rotate(162deg); }
+        .wheel.prize-6 { transform: rotate(198deg); }
+        .wheel.prize-7 { transform: rotate(234deg); }
+        .wheel.prize-8 { transform: rotate(270deg); }
+        .wheel.prize-9 { transform: rotate(306deg); }
+        .wheel.prize-10 { transform: rotate(342deg); }
+        
         button {
             background: gold;
             border: none;
             padding: 15px 30px;
             font-size: 18px;
-            border-radius: 10px;
+            border-radius: 30px;
             font-weight: bold;
             margin: 10px;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(0.95);
         }
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
         }
         #result {
-            margin-top: 20px;
-            font-size: 18px;
+            margin: 20px 0;
+            font-size: 20px;
             min-height: 60px;
+            font-weight: bold;
         }
         .prize-section {
             margin: 20px 0;
-            padding: 15px;
+            padding: 20px;
             border: 2px solid gold;
-            border-radius: 10px;
+            border-radius: 15px;
+            background: rgba(255, 215, 0, 0.1);
             display: none;
         }
         .close-btn {
-            background: #666;
+            background: #444;
             color: white;
+        }
+        .main-btn {
+            background: gold;
+            color: black;
+        }
+        .bot-message {
+            background: #2b2b2b;
+            border-left: 4px solid gold;
+            padding: 10px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #ccc;
+        }
+        .status {
+            color: #4ecdc4;
+            font-size: 14px;
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
-    <h3>🎡 Колесо фортуны</h3>
+    <h3>🎡 КОЛЕСО ФОРТУНЫ</h3>
     
     <div class="wheel-container">
-        <div class="wheel" id="wheel" onclick="spinWheel()"></div>
-    </div>
-    
-    <div>
-        <button onclick="spinWheel()" id="spinBtn">🎡 КРУТИТЬ</button>
-        <button onclick="closeApp()" class="close-btn" id="closeBtn" style="display: none;">✖️ ЗАКРЫТЬ</button>
-    </div>
-    
-    <div id="result"></div>
-    
-    <div class="prize-section" id="prizeSection">
-        <h2 id="prizeTitle"></h2>
-        <p id="prizeDescription"></p>
-        <button onclick="closeApp()">✅ ПОЛУЧИТЬ ПРИЗ</button>
+        <div class="wheel" id="wheel"></div>
+        
+        <div id="result"></div>
+        
+        <div>
+            <button onclick="spinWheel()" id="spinBtn" class="main-btn">🎡 КРУТИТЬ</button>
+            <button onclick="closeApp()" class="close-btn" id="closeBtn" style="display: none;">✖️ ЗАКРЫТЬ</button>
+        </div>
+        
+        <div class="prize-section" id="prizeSection">
+            <h2 id="prizeTitle">🎉 ПОЗДРАВЛЯЕМ!</h2>
+            <p id="prizeDescription"></p>
+            <div class="bot-message" id="botMessage"></div>
+            <div class="status" id="status"></div>
+        </div>
     </div>
 
     <script>
@@ -96,22 +151,23 @@
         tg.expand();
         
         console.log('WebApp version:', tg.version);
+        console.log('User:', tg.initDataUnsafe?.user);
         
-        // Настройка главной кнопки (опционально)
-        tg.MainButton.setText("ЗАКРЫТЬ");
-        tg.MainButton.onClick(() => tg.close());
+        // Получаем данные пользователя
+        const userId = tg.initDataUnsafe?.user?.id;
+        console.log('User ID:', userId);
         
         const prizes = [
-            { name: '1 ЧАС', value: 60, emoji: '⏱️', display: '1 час' },
-            { name: '2 ЧАСА', value: 120, emoji: '⏱️', display: '2 часа' },
-            { name: '3 ЧАСА', value: 180, emoji: '⏱️', display: '3 часа' },
-            { name: '6 ЧАСОВ', value: 360, emoji: '⏱️', display: '6 часов' },
-            { name: '2 СЛОТА', value: 2, emoji: '🧩', display: '2 слота' },
-            { name: 'ЛОТЕРЕЯ', value: 1, emoji: '🎰', display: 'Лотерея' },
-            { name: '+1', value: 1, emoji: '✨', display: '+1 прокрут' },
-            { name: 'ПРОМО', value: 50, emoji: '🎟️', display: 'Промокод' },
-            { name: '25 ГРН', value: 25, emoji: '💰', display: '25 грн' },
-            { name: '50 ГРН', value: 50, emoji: '💰', display: '50 грн' }
+            { name: '1 ЧАС', value: 60, emoji: '⏱️', display: '1 час', angle: 18 },
+            { name: '2 ЧАСА', value: 120, emoji: '⏱️', display: '2 часа', angle: 54 },
+            { name: '3 ЧАСА', value: 180, emoji: '⏱️', display: '3 часа', angle: 90 },
+            { name: '6 ЧАСОВ', value: 360, emoji: '⏱️', display: '6 часов', angle: 126 },
+            { name: '2 СЛОТА', value: 2, emoji: '🧩', display: '2 слота', angle: 162 },
+            { name: 'ЛОТЕРЕЯ', value: 1, emoji: '🎰', display: 'Лотерея', angle: 198 },
+            { name: '+1', value: 1, emoji: '✨', display: '+1 прокрут', angle: 234 },
+            { name: 'ПРОМО', value: 50, emoji: '🎟️', display: 'Промокод', angle: 270 },
+            { name: '25 ГРН', value: 25, emoji: '💰', display: '25 грн', angle: 306 },
+            { name: '50 ГРН', value: 50, emoji: '💰', display: '50 грн', angle: 342 }
         ];
         
         function getRandomPrize() {
@@ -124,48 +180,57 @@
                 sum += weights[i];
                 if (rand < sum) {
                     console.log(`🎯 Выпал: ${prizes[i].name} (вес ${weights[i]})`);
-                    return prizes[i];
+                    return { prize: prizes[i], index: i };
                 }
             }
-            return prizes[0];
+            return { prize: prizes[0], index: 0 };
         }
         
         let isSpinning = false;
         
-        function spinWheel() {
+        async function spinWheel() {
             if (isSpinning) return;
             
             isSpinning = true;
             document.getElementById('spinBtn').disabled = true;
             document.getElementById('closeBtn').style.display = 'none';
+            document.getElementById('prizeSection').style.display = 'none';
+            document.getElementById('result').innerHTML = '🎡 Колесо крутится...';
+            
+            // Получаем случайный приз
+            const { prize, index } = getRandomPrize();
             
             // Анимация колеса
             const wheel = document.getElementById('wheel');
             wheel.classList.add('spinning');
             
-            // Получаем случайный приз
-            const prize = getRandomPrize();
-            
-            // Показываем результат через 3 секунды (после анимации)
+            // Останавливаем на нужном угле через 3 секунды
             setTimeout(() => {
                 wheel.classList.remove('spinning');
+                wheel.classList.add(`prize-${index + 1}`);
+                
                 document.getElementById('result').innerHTML = `
                     🎉 Выигрыш: ${prize.emoji} ${prize.display}!
                 `;
                 
                 // Показываем секцию с призом
-                const prizeSection = document.getElementById('prizeSection');
-                prizeSection.style.display = 'block';
+                document.getElementById('prizeSection').style.display = 'block';
                 document.getElementById('prizeTitle').innerHTML = `🎉 ${prize.emoji} ${prize.display}`;
                 document.getElementById('prizeDescription').innerHTML = `
-                    Поздравляем!<br>
                     <b>${prize.display}</b> уже ваш!
                 `;
                 
-                // Показываем кнопку закрытия
-                document.getElementById('closeBtn').style.display = 'inline-block';
+                // Отправляем результат в бота через HTTP запрос
+                sendResultToBot(prize);
                 
-                // Отправляем данные в бота НО НЕ ЗАКРЫВАЕМ
+            }, 3000);
+        }
+        
+        async function sendResultToBot(prize) {
+            try {
+                document.getElementById('status').innerHTML = '⏳ Отправка результата...';
+                
+                // Формируем данные
                 const data = {
                     type: 'free',
                     prize: {
@@ -175,30 +240,67 @@
                 };
                 
                 console.log('📤 Отправляем:', data);
-                tg.sendData(JSON.stringify(data));
                 
-                // НЕ закрываем приложение!
-                // tg.close() - НЕ ВЫЗЫВАЕМ
+                // Отправляем через HTTP запрос к боту
+                // ВАЖНО: замените URL на ваш реальный адрес
+                const response = await fetch('https://06f2-176-119-114-166.ngrok-free.app/api/wheel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        data: data
+                    })
+                });
                 
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Ответ от сервера:', result);
+                    
+                    document.getElementById('status').innerHTML = '✅ Результат отправлен!';
+                    document.getElementById('botMessage').innerHTML = result.message || 'Приз получен! Проверьте бота.';
+                    
+                    // Показываем кнопку закрытия
+                    document.getElementById('closeBtn').style.display = 'inline-block';
+                } else {
+                    throw new Error('Ошибка сервера');
+                }
+                
+            } catch (error) {
+                console.error('❌ Ошибка отправки:', error);
+                document.getElementById('status').innerHTML = '❌ Ошибка отправки. Попробуйте еще раз.';
+                document.getElementById('status').style.color = '#ff6b6b';
+                
+                // Показываем кнопку для повторной отправки
+                document.getElementById('closeBtn').style.display = 'inline-block';
+                document.getElementById('closeBtn').innerHTML = '↻ ЗАКРЫТЬ';
+            } finally {
                 isSpinning = false;
                 document.getElementById('spinBtn').disabled = false;
-            }, 3000);
+            }
         }
         
         function closeApp() {
             tg.close();
         }
         
-        // Обработка данных, которые бот может отправить в WebApp
+        // Настройка главной кнопки (запасной вариант)
+        tg.MainButton.setText("ЗАКРЫТЬ");
+        tg.MainButton.onClick(() => tg.close());
+        tg.MainButton.hide(); // Скрываем, пока не нужна
+        
+        // Обработка событий
         tg.onEvent('viewportChanged', function() {
             console.log('Viewport changed');
         });
         
-        // Если бот отправит данные в WebApp
+        // Если бот отправит данные обратно
         window.addEventListener('message', function(event) {
             console.log('Message received:', event.data);
         });
         
+        console.log('WebApp initialized');
     </script>
 </body>
 </html>
