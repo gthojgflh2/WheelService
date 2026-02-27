@@ -6,7 +6,7 @@
     <title>Spamlordy | Колесо фортуны</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Стили без изменений - оставь как есть */
+        /* ТВОИ СТИЛИ ОСТАЮТСЯ ТЕМИ ЖЕ */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
         * {
@@ -624,6 +624,21 @@
                 padding: 10px 8px;
             }
         }
+
+        .timer {
+            font-size: 48px;
+            font-weight: 900;
+            color: gold;
+            margin: 20px 0;
+            text-shadow: 0 0 20px rgba(255,215,0,0.5);
+            animation: pulse 1s ease infinite;
+        }
+
+        .close-hint {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -678,6 +693,9 @@
         </div>
     </div>
 
+    <div class="timer" id="timer"></div>
+    <div class="close-hint" id="closeHint"></div>
+
     <button class="action-btn" id="spinBtn" onclick="spinWheel()">
         🎡 Крутить
     </button>
@@ -691,7 +709,7 @@
     <div class="prizes-grid" id="prizesGrid"></div>
 
     <button class="back-btn" onclick="closeApp()">
-        ◀️ Назад
+        ◀️ Закрыть
     </button>
 </div>
 
@@ -699,24 +717,10 @@
     let tg = window.Telegram.WebApp;
 
     console.log('Telegram WebApp version:', tg.version);
-    console.log('Platform:', tg.platform);
 
-    // 👇 ЗАПРЕЩАЕМ АВТОМАТИЧЕСКОЕ ЗАКРЫТИЕ
-    tg.disableClosingConfirmation();
-
-    // 👇 ДОБАВЛЯЕМ ОБРАБОТЧИКИ СОБЫТИЙ
-    tg.onEvent('mainButtonClicked', function() {
-        console.log('Main button clicked');
-    });
-
-    // 👇 ПЕРЕХВАТЫВАЕМ ЗАКРЫТИЕ
-    window.addEventListener('beforeunload', function(e) {
-        console.log('Attempting to close app');
-        // Не даем закрыться
-        e.preventDefault();
-        e.returnValue = '';
-        return '';
-    });
+    // Расширяем на весь экран
+    tg.ready();
+    tg.expand();
 
     let userId = null;
     let spinType = 'free';
@@ -725,8 +729,9 @@
     let isSpinning = false;
     let totalSpins = 0;
     let currentRotation = 0;
+    let closeTimer = null;
 
-    // 👇 ВАЖНО: ПРОВЕРЯЕМ СООТВЕТСТВИЕ ПРИЗОВ
+    // Призы
     const prizes = [
         { name: '1 ЧАС', value: 60, color: '#FF6B6B', emoji: '⏱️', displayName: '1 час', weight: 30 },
         { name: '2 ЧАСА', value: 120, color: '#4ECDC4', emoji: '⏱️', displayName: '2 часа', weight: 20 },
@@ -742,13 +747,10 @@
 
     const canvas = document.getElementById('wheelCanvas');
     const ctx = canvas.getContext('2d');
-
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    tg.ready();
-    tg.expand();
-
+    // Рисуем колесо
     function drawWheel(rotation = 0) {
         const centerX = 150;
         const centerY = 150;
@@ -848,9 +850,9 @@
             card.className = 'prize-card';
             card.style.animationDelay = `${index * 0.05}s`;
             card.innerHTML = `
-                    <div class="prize-color" style="background: ${prize.color};"></div>
-                    <span>${prize.emoji} ${prize.displayName}</span>
-                `;
+                <div class="prize-color" style="background: ${prize.color};"></div>
+                <span>${prize.emoji} ${prize.displayName}</span>
+            `;
             grid.appendChild(card);
         });
     }
@@ -869,15 +871,15 @@
             canSpin = canSpinFree;
 
             document.getElementById('freeBadge').innerHTML = `
-                    <span>🆓</span>
-                    <span>Бесплатный</span>
-                    <span>${canSpinFree ? '✅' : '❌'}</span>
-                `;
+                <span>🆓</span>
+                <span>Бесплатный</span>
+                <span>${canSpinFree ? '✅' : '❌'}</span>
+            `;
             document.getElementById('extraBadge').innerHTML = `
-                    <span>✨</span>
-                    <span>Доп. прокрутов</span>
-                    <span>${extraSpins}</span>
-                `;
+                <span>✨</span>
+                <span>Доп. прокрутов</span>
+                <span>${extraSpins}</span>
+            `;
 
             loadStats();
             updateSpinButton();
@@ -936,6 +938,44 @@
         return { index: 0, prize: prizes[0], rotation: currentRotation + Math.PI * 2 * 10 };
     }
 
+    function getDescription(name) {
+        const desc = {
+            '1 ЧАС': '✅ +60 минут доступа',
+            '2 ЧАСА': '✅ +120 минут доступа',
+            '3 ЧАСА': '✅ +180 минут доступа',
+            '6 ЧАСОВ': '✅ +360 минут доступа',
+            '2 СЛОТА': '✅ +2 слота на 2 недели',
+            'ЛОТЕРЕЯ': '🎰 Билет в лотерею',
+            '+1': '✨ Дополнительный прокрут',
+            'ПРОМО': '🎟 Промокод на 50 грн',
+            '25 ГРН': '💰 25 грн на баланс',
+            '50 ГРН': '💰 50 грн на баланс'
+        };
+        return desc[name] || 'Приз получен!';
+    }
+
+    function startCloseTimer() {
+        const timerEl = document.getElementById('timer');
+        const hintEl = document.getElementById('closeHint');
+        
+        let secondsLeft = 40;
+        timerEl.textContent = secondsLeft + 'с';
+        hintEl.textContent = 'Окно закроется через ' + secondsLeft + ' секунд';
+        
+        closeTimer = setInterval(() => {
+            secondsLeft--;
+            timerEl.textContent = secondsLeft + 'с';
+            hintEl.textContent = 'Окно закроется через ' + secondsLeft + ' секунд';
+            
+            if (secondsLeft <= 0) {
+                clearInterval(closeTimer);
+                timerEl.textContent = '0с';
+                hintEl.textContent = 'Закрываю окно...';
+                tg.close();
+            }
+        }, 1000);
+    }
+
     function spinWheel() {
         if (isSpinning) return;
 
@@ -948,8 +988,16 @@
             return;
         }
 
+        // Очищаем предыдущий таймер если был
+        if (closeTimer) {
+            clearInterval(closeTimer);
+            closeTimer = null;
+        }
+
         isSpinning = true;
         document.getElementById('spinBtn').disabled = true;
+        document.getElementById('timer').textContent = '';
+        document.getElementById('closeHint').textContent = '';
 
         const result = getRandomPrize();
         const startRotation = currentRotation;
@@ -970,46 +1018,55 @@
                 requestAnimationFrame(animate);
             } else {
                 console.log('🎯 ВЫИГРЫШ:', result.prize.name);
-
-          const data = {
-    type: spinType,
-    prize: {
-        name: result.prize.name,
-        value: result.prize.value
-    }
-};
-
-tg.postEvent('web_app_data_send', JSON.stringify(data));  
-console.log('📤 Data sent WITHOUT closing');
-
+                
+                // Показываем результат
+                document.getElementById('prizeInfo').innerHTML = `
+                    <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
+                    <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
+                `;
+                
+                // ОТПРАВЛЯЕМ ДАННЫЕ В БОТА
+                const data = {
+                    type: spinType,
+                    prize: {
+                        name: result.prize.name,
+                        value: result.prize.value
+                    }
+                };
+                
+                tg.sendData(JSON.stringify(data));
+                console.log('📤 Данные отправлены в бота');
+                
+                // Обновляем статистику
                 totalSpins++;
                 document.getElementById('totalSpins').textContent = totalSpins;
-
-                document.getElementById('prizeInfo').innerHTML = `
-                <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
-                <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
-            `;
-
+                
                 if (spinType === 'free') {
                     canSpin = false;
                     document.getElementById('freeBadge').innerHTML = `
-                    <span>🆓</span>
-                    <span>Бесплатный</span>
-                    <span>❌</span>
-                `;
+                        <span>🆓</span>
+                        <span>Бесплатный</span>
+                        <span>❌</span>
+                    `;
                     document.getElementById('freeSpins').textContent = '0';
                 } else {
                     extraSpins--;
                     document.getElementById('extraBadge').innerHTML = `
-                    <span>✨</span>
-                    <span>Доп. прокрутов</span>
-                    <span>${extraSpins}</span>
-                `;
+                        <span>✨</span>
+                        <span>Доп. прокрутов</span>
+                        <span>${extraSpins}</span>
+                    `;
                     document.getElementById('extraSpins').textContent = extraSpins;
                 }
-
+                
                 saveStats();
                 updateSpinButton();
+                
+                // Запускаем таймер на 40 секунд
+                startCloseTimer();
+                
+                document.getElementById('spinBtn').innerHTML = '🎡 Крутить еще';
+                document.getElementById('spinBtn').disabled = false;
                 isSpinning = false;
             }
         }
@@ -1017,24 +1074,10 @@ console.log('📤 Data sent WITHOUT closing');
         requestAnimationFrame(animate);
     }
 
-    function getDescription(name) {
-        const desc = {
-            '1 ЧАС': '✅ +60 минут доступа',
-            '2 ЧАСА': '✅ +120 минут доступа',
-            '3 ЧАСА': '✅ +180 минут доступа',
-            '6 ЧАСОВ': '✅ +360 минут доступа',
-            '2 СЛОТА': '✅ +2 слота на 2 недели',
-            'ЛОТЕРЕЯ': '🎰 Билет в лотерею',
-            '+1': '✨ Дополнительный прокрут',
-            'ПРОМО': '🎟 Промокод на 50 грн',
-            '25 ГРН': '💰 25 грн на баланс',
-            '50 ГРН': '💰 50 грн на баланс'
-        };
-        return desc[name] || 'Приз получен!';
-    }
-
     function closeApp() {
-        // Только для кнопки "◀️ Назад"
+        if (closeTimer) {
+            clearInterval(closeTimer);
+        }
         tg.close();
     }
 
