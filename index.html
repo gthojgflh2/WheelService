@@ -3,13 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+            background: #1a1a1a;
+            color: white;
+        }
+        .wheel-container {
+            margin: 30px 0;
+        }
+        .wheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 5px solid gold;
+            margin: 0 auto;
+            background: conic-gradient(
+                #ff6b6b 0deg 36deg,
+                #4ecdc4 36deg 72deg,
+                #ffe66d 72deg 108deg,
+                #ff9f1c 108deg 144deg,
+                #bf4e8a 144deg 180deg,
+                #6c5b7b 180deg 216deg,
+                #f08a5d 216deg 252deg,
+                #b83b5e 252deg 288deg,
+                #2d4059 288deg 324deg,
+                #3a6350 324deg 360deg
+            );
+            transition: transform 3s cubic-bezier(0.25, 0.1, 0.15, 1);
+            cursor: pointer;
+        }
+        .wheel.spinning {
+            transform: rotate(1440deg);
+        }
+        button {
+            background: gold;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            font-weight: bold;
+            margin: 10px;
+            cursor: pointer;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            min-height: 60px;
+        }
+        .prize-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid gold;
+            border-radius: 10px;
+            display: none;
+        }
+        .close-btn {
+            background: #666;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-    <h3>🎡 Колесо фортуны (тест)</h3>
+    <h3>🎡 Колесо фортуны</h3>
     
-    <button onclick="spinWheel()" style="padding: 20px; font-size: 20px;">🎡 КРУТИТЬ</button>
+    <div class="wheel-container">
+        <div class="wheel" id="wheel" onclick="spinWheel()"></div>
+    </div>
     
-    <div id="result" style="margin-top: 20px; font-size: 18px;"></div>
+    <div>
+        <button onclick="spinWheel()" id="spinBtn">🎡 КРУТИТЬ</button>
+        <button onclick="closeApp()" class="close-btn" id="closeBtn" style="display: none;">✖️ ЗАКРЫТЬ</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <div class="prize-section" id="prizeSection">
+        <h2 id="prizeTitle"></h2>
+        <p id="prizeDescription"></p>
+        <button onclick="closeApp()">✅ ПОЛУЧИТЬ ПРИЗ</button>
+    </div>
 
     <script>
         let tg = window.Telegram.WebApp;
@@ -17,6 +96,10 @@
         tg.expand();
         
         console.log('WebApp version:', tg.version);
+        
+        // Настройка главной кнопки (опционально)
+        tg.MainButton.setText("ЗАКРЫТЬ");
+        tg.MainButton.onClick(() => tg.close());
         
         const prizes = [
             { name: '1 ЧАС', value: 60, emoji: '⏱️', display: '1 час' },
@@ -47,25 +130,75 @@
             return prizes[0];
         }
         
+        let isSpinning = false;
+        
         function spinWheel() {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            document.getElementById('spinBtn').disabled = true;
+            document.getElementById('closeBtn').style.display = 'none';
+            
+            // Анимация колеса
+            const wheel = document.getElementById('wheel');
+            wheel.classList.add('spinning');
+            
+            // Получаем случайный приз
             const prize = getRandomPrize();
             
-            const data = {
-                type: 'free',
-                prize: {
-                    name: prize.name,
-                    value: prize.value
-                }
-            };
-            
-            console.log('📤 Отправляем:', data);
-            tg.sendData(JSON.stringify(data));
-            
-            document.getElementById('result').innerHTML = `
-                🎉 Выигрыш: ${prize.emoji} ${prize.display}!<br>
-                <small>Отправлено в бота</small>
-            `;
+            // Показываем результат через 3 секунды (после анимации)
+            setTimeout(() => {
+                wheel.classList.remove('spinning');
+                document.getElementById('result').innerHTML = `
+                    🎉 Выигрыш: ${prize.emoji} ${prize.display}!
+                `;
+                
+                // Показываем секцию с призом
+                const prizeSection = document.getElementById('prizeSection');
+                prizeSection.style.display = 'block';
+                document.getElementById('prizeTitle').innerHTML = `🎉 ${prize.emoji} ${prize.display}`;
+                document.getElementById('prizeDescription').innerHTML = `
+                    Поздравляем!<br>
+                    <b>${prize.display}</b> уже ваш!
+                `;
+                
+                // Показываем кнопку закрытия
+                document.getElementById('closeBtn').style.display = 'inline-block';
+                
+                // Отправляем данные в бота НО НЕ ЗАКРЫВАЕМ
+                const data = {
+                    type: 'free',
+                    prize: {
+                        name: prize.name,
+                        value: prize.value
+                    }
+                };
+                
+                console.log('📤 Отправляем:', data);
+                tg.sendData(JSON.stringify(data));
+                
+                // НЕ закрываем приложение!
+                // tg.close() - НЕ ВЫЗЫВАЕМ
+                
+                isSpinning = false;
+                document.getElementById('spinBtn').disabled = false;
+            }, 3000);
         }
+        
+        function closeApp() {
+            tg.close();
+        }
+        
+        // Обработка данных, которые бот может отправить в WebApp
+        tg.onEvent('viewportChanged', function() {
+            console.log('Viewport changed');
+        });
+        
+        // Если бот отправит данные в WebApp
+        window.addEventListener('message', function(event) {
+            console.log('Message received:', event.data);
+        });
+        
     </script>
 </body>
 </html>
