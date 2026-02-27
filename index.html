@@ -984,11 +984,13 @@
         for (let i = 0; i < prizes.length; i++) {
             sum += prizes[i].weight;
             if (random < sum) {
-                return {
-                    index: i,
-                    prize: prizes[i],
-                    rotation: currentRotation + (Math.PI * 2 * 10) + (i * (Math.PI * 2 / prizes.length))
-                };
+               return {
+    index: i,
+    prize: prizes[i],
+    rotation: currentRotation
+              + Math.PI * 2 * 10
+              + (Math.PI * 2 - (i * anglePerPrize) - anglePerPrize / 2)
+};
             }
         }
         return { index: 0, prize: prizes[0], rotation: currentRotation + Math.PI * 2 * 10 };
@@ -1019,3 +1021,4 @@
 </script>
 </body>
 </html>
+
