@@ -6,7 +6,6 @@
     <title>Spamlordy | Колесо фортуны</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Стили без изменений - оставь как есть */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
         * {
@@ -701,22 +700,9 @@
     console.log('Telegram WebApp version:', tg.version);
     console.log('Platform:', tg.platform);
 
-    // 👇 ЗАПРЕЩАЕМ АВТОМАТИЧЕСКОЕ ЗАКРЫТИЕ
-    tg.disableClosingConfirmation();
-
-    // 👇 ДОБАВЛЯЕМ ОБРАБОТЧИКИ СОБЫТИЙ
-    tg.onEvent('mainButtonClicked', function() {
-        console.log('Main button clicked');
-    });
-
-    // 👇 ПЕРЕХВАТЫВАЕМ ЗАКРЫТИЕ
-    window.addEventListener('beforeunload', function(e) {
-        console.log('Attempting to close app');
-        // Не даем закрыться
-        e.preventDefault();
-        e.returnValue = '';
-        return '';
-    });
+    // Расширяем на весь экран
+    tg.ready();
+    tg.expand();
 
     let userId = null;
     let spinType = 'free';
@@ -725,8 +711,9 @@
     let isSpinning = false;
     let totalSpins = 0;
     let currentRotation = 0;
+    let spinTimeout = null;
 
-    // 👇 ВАЖНО: ПРОВЕРЯЕМ СООТВЕТСТВИЕ ПРИЗОВ
+    // Призы
     const prizes = [
         { name: '1 ЧАС', value: 60, color: '#FF6B6B', emoji: '⏱️', displayName: '1 час', weight: 30 },
         { name: '2 ЧАСА', value: 120, color: '#4ECDC4', emoji: '⏱️', displayName: '2 часа', weight: 20 },
@@ -742,13 +729,10 @@
 
     const canvas = document.getElementById('wheelCanvas');
     const ctx = canvas.getContext('2d');
-
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    tg.ready();
-    tg.expand();
-
+    // Рисуем колесо
     function drawWheel(rotation = 0) {
         const centerX = 150;
         const centerY = 150;
@@ -848,9 +832,9 @@
             card.className = 'prize-card';
             card.style.animationDelay = `${index * 0.05}s`;
             card.innerHTML = `
-                    <div class="prize-color" style="background: ${prize.color};"></div>
-                    <span>${prize.emoji} ${prize.displayName}</span>
-                `;
+                <div class="prize-color" style="background: ${prize.color};"></div>
+                <span>${prize.emoji} ${prize.displayName}</span>
+            `;
             grid.appendChild(card);
         });
     }
@@ -869,15 +853,15 @@
             canSpin = canSpinFree;
 
             document.getElementById('freeBadge').innerHTML = `
-                    <span>🆓</span>
-                    <span>Бесплатный</span>
-                    <span>${canSpinFree ? '✅' : '❌'}</span>
-                `;
+                <span>🆓</span>
+                <span>Бесплатный</span>
+                <span>${canSpinFree ? '✅' : '❌'}</span>
+            `;
             document.getElementById('extraBadge').innerHTML = `
-                    <span>✨</span>
-                    <span>Доп. прокрутов</span>
-                    <span>${extraSpins}</span>
-                `;
+                <span>✨</span>
+                <span>Доп. прокрутов</span>
+                <span>${extraSpins}</span>
+            `;
 
             loadStats();
             updateSpinButton();
@@ -936,6 +920,22 @@
         return { index: 0, prize: prizes[0], rotation: currentRotation + Math.PI * 2 * 10 };
     }
 
+    function getDescription(name) {
+        const desc = {
+            '1 ЧАС': '✅ +60 минут доступа',
+            '2 ЧАСА': '✅ +120 минут доступа',
+            '3 ЧАСА': '✅ +180 минут доступа',
+            '6 ЧАСОВ': '✅ +360 минут доступа',
+            '2 СЛОТА': '✅ +2 слота на 2 недели',
+            'ЛОТЕРЕЯ': '🎰 Билет в лотерею',
+            '+1': '✨ Дополнительный прокрут',
+            'ПРОМО': '🎟 Промокод на 50 грн',
+            '25 ГРН': '💰 25 грн на баланс',
+            '50 ГРН': '💰 50 грн на баланс'
+        };
+        return desc[name] || 'Приз получен!';
+    }
+
     function spinWheel() {
         if (isSpinning) return;
 
@@ -970,47 +970,55 @@
                 requestAnimationFrame(animate);
             } else {
                 console.log('🎯 ВЫИГРЫШ:', result.prize.name);
-
-                const data = {
-                    type: spinType,
-                    prize: {
-                        name: result.prize.name,
-                        value: result.prize.value
-                    }
-                };
-
-                // Отправляем через Telegram WebApp
-                tg.sendData(JSON.stringify(data));
-                console.log('📤 Data sent:', data);
-
+                
+                // СНАЧАЛА показываем результат пользователю
+                document.getElementById('prizeInfo').innerHTML = `
+                    <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
+                    <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
+                `;
+                
+                // Обновляем статистику
                 totalSpins++;
                 document.getElementById('totalSpins').textContent = totalSpins;
-
-                document.getElementById('prizeInfo').innerHTML = `
-                <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
-                <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
-            `;
-
+                
                 if (spinType === 'free') {
                     canSpin = false;
                     document.getElementById('freeBadge').innerHTML = `
-                    <span>🆓</span>
-                    <span>Бесплатный</span>
-                    <span>❌</span>
-                `;
+                        <span>🆓</span>
+                        <span>Бесплатный</span>
+                        <span>❌</span>
+                    `;
                     document.getElementById('freeSpins').textContent = '0';
                 } else {
                     extraSpins--;
                     document.getElementById('extraBadge').innerHTML = `
-                    <span>✨</span>
-                    <span>Доп. прокрутов</span>
-                    <span>${extraSpins}</span>
-                `;
+                        <span>✨</span>
+                        <span>Доп. прокрутов</span>
+                        <span>${extraSpins}</span>
+                    `;
                     document.getElementById('extraSpins').textContent = extraSpins;
                 }
-
+                
                 saveStats();
                 updateSpinButton();
+                
+                // Ждем 2 секунды, чтобы пользователь увидел результат
+                setTimeout(() => {
+                    // Теперь отправляем данные и закрываемся
+                    const data = {
+                        type: spinType,
+                        prize: {
+                            name: result.prize.name,
+                            value: result.prize.value
+                        }
+                    };
+                    
+                    tg.sendData(JSON.stringify(data));
+                    console.log('📤 Data sent:', data);
+                    
+                    // Telegram сам закроет WebView после sendData
+                }, 2000);
+                
                 isSpinning = false;
             }
         }
@@ -1018,24 +1026,7 @@
         requestAnimationFrame(animate);
     }
 
-    function getDescription(name) {
-        const desc = {
-            '1 ЧАС': '✅ +60 минут доступа',
-            '2 ЧАСА': '✅ +120 минут доступа',
-            '3 ЧАСА': '✅ +180 минут доступа',
-            '6 ЧАСОВ': '✅ +360 минут доступа',
-            '2 СЛОТА': '✅ +2 слота на 2 недели',
-            'ЛОТЕРЕЯ': '🎰 Билет в лотерею',
-            '+1': '✨ Дополнительный прокрут',
-            'ПРОМО': '🎟 Промокод на 50 грн',
-            '25 ГРН': '💰 25 грн на баланс',
-            '50 ГРН': '💰 50 грн на баланс'
-        };
-        return desc[name] || 'Приз получен!';
-    }
-
     function closeApp() {
-        // Только для кнопки "◀️ Назад"
         tg.close();
     }
 
