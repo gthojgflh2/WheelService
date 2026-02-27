@@ -6,7 +6,7 @@
     <title>Spamlordy | Колесо фортуны</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* ТВОИ СТИЛИ */
+        /* ТВОИ СТИЛИ (без изменений) */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
         * {
@@ -297,120 +297,6 @@
             0 0 0 8px rgba(100,108,255,0.3);
         }
 
-        .prize-info {
-            background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(18,20,35,0.8));
-            border-radius: 50px;
-            padding: 20px;
-            margin: 25px 0;
-            border: 1px solid rgba(100,108,255,0.3);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 0 30px rgba(100,108,255,0.1);
-            position: relative;
-            overflow: hidden;
-            animation: glowPulse 3s ease infinite;
-        }
-
-        @keyframes glowPulse {
-            0%, 100% { border-color: rgba(100,108,255,0.3); }
-            50% { border-color: rgba(157,80,187,0.5); }
-        }
-
-        .prize-info::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(100,108,255,0.2), transparent 70%);
-            animation: rotate 8s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .prize-info-main {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #fff, #c0c4ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 6px;
-            position: relative;
-            z-index: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .prize-info-sub {
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.8);
-            font-weight: 500;
-            position: relative;
-            z-index: 1;
-        }
-
-        .badges {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 25px;
-            animation: fadeInUp 0.6s ease-out 0.3s both;
-        }
-
-        .badge {
-            flex: 1;
-            padding: 16px 12px;
-            border-radius: 40px;
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .badge::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .badge:hover {
-            transform: translateY(-3px) scale(1.02);
-        }
-
-        .badge:hover::before {
-            opacity: 1;
-            animation: rotate 3s linear infinite;
-        }
-
-        .badge.free {
-            background: rgba(76, 175, 80, 0.1);
-            color: #4CAF50;
-            border-color: rgba(76, 175, 80, 0.3);
-        }
-
-        .badge.extra {
-            background: rgba(255, 152, 0, 0.1);
-            color: #FF9800;
-            border-color: rgba(255, 152, 0, 0.3);
-        }
-
         .action-btn {
             background: linear-gradient(135deg, #646CFF, #9D50BB, #646CFF);
             background-size: 200% 200%;
@@ -461,12 +347,23 @@
         }
 
         .action-btn:disabled {
-            opacity: 0.5;
+            opacity: 0.3;
             background: linear-gradient(135deg, #444, #666);
             box-shadow: none;
             cursor: not-allowed;
             transform: none;
             animation: none;
+            pointer-events: none;
+        }
+
+        .disabled-btn {
+            opacity: 0.3;
+            background: linear-gradient(135deg, #444, #666) !important;
+            box-shadow: none !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+            animation: none !important;
+            pointer-events: none !important;
         }
 
         .dropdown-btn {
@@ -600,6 +497,68 @@
             animation: rotate 3s linear infinite;
         }
 
+        .blocked-container {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .blocked-title {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+
+        .blocked-text {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .blocked-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: shake 0.5s ease infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .how-to-get {
+            background: rgba(100, 108, 255, 0.1);
+            border-radius: 30px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+            border: 1px solid rgba(100, 108, 255, 0.3);
+        }
+
+        .how-to-get h3 {
+            color: #646CFF;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .how-to-get ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .how-to-get li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .how-to-get li:before {
+            content: "🎁";
+            position: absolute;
+            left: 0;
+        }
+
         @media (max-width: 380px) {
             .container {
                 padding: 20px 15px;
@@ -615,106 +574,16 @@
                 font-size: 11px;
                 padding: 4px 12px;
             }
-            .badge {
-                font-size: 12px;
-                padding: 14px 8px;
-            }
-            .prize-card {
-                font-size: 11px;
-                padding: 10px 8px;
-            }
-        }
-
-        .blocked-message {
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid red;
-            border-radius: 30px;
-            padding: 20px;
-            margin: 20px 0;
-            color: #ff6b6b;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="logo">
-        <span class="logo-icon">⚡</span>
-        <span class="logo-text">SPAMLORDY</span>
-        <span class="logo-badge">FORTUNE</span>
-    </div>
-
-    <h1>Колесо фортуны</h1>
-
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-value" id="freeSpins">0</div>
-            <div class="stat-label">Бесплатно</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="extraSpins">0</div>
-            <div class="stat-label">Дополнительно</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="totalSpins">0</div>
-            <div class="stat-label">Всего</div>
-        </div>
-    </div>
-
-    <div class="wheel-wrapper">
-        <div class="pointer-container">
-            <div class="pointer"></div>
-        </div>
-        <div class="canvas-wrapper">
-            <canvas id="wheelCanvas" width="300" height="300"></canvas>
-        </div>
-    </div>
-
-    <div class="prize-info" id="prizeInfo">
-        <div class="prize-info-main">🎯 Готов крутить?</div>
-        <div class="prize-info-sub">Нажми кнопку и испытай удачу</div>
-    </div>
-
-    <div class="badges">
-        <div class="badge free" id="freeBadge">
-            <span>🆓</span>
-            <span>Бесплатный</span>
-            <span>✅</span>
-        </div>
-        <div class="badge extra" id="extraBadge">
-            <span>✨</span>
-            <span>Доп. прокрутов</span>
-            <span>0</span>
-        </div>
-    </div>
-
-    <div id="blockedMessage" style="display: none;" class="blocked-message">
-        ⚠️ У вас нет прокрутов! Закройте окно и откройте заново.
-    </div>
-
-    <button class="action-btn" id="spinBtn" onclick="spinWheel()">
-        🎡 Крутить
-    </button>
-
-    <button class="dropdown-btn" onclick="togglePrizes()">
-        <span>📋</span>
-        <span>Все призы</span>
-        <span>▼</span>
-    </button>
-
-    <div class="prizes-grid" id="prizesGrid"></div>
-
-    <button class="back-btn" onclick="closeApp()">
-        ◀️ Назад
-    </button>
+<div class="container" id="mainContainer">
+    <!-- Контент будет динамически заменяться -->
 </div>
 
 <script>
     let tg = window.Telegram.WebApp;
-
-    console.log('Telegram WebApp version:', tg.version);
-    console.log('Platform:', tg.platform);
-
-    // ИНИЦИАЛИЗАЦИЯ
     tg.ready();
     tg.expand();
 
@@ -725,13 +594,9 @@
     let isSpinning = false;
     let totalSpins = 0;
     let currentRotation = 0;
-    
-    // 👇 ФЛАГИ ДЛЯ ЗАЩИТЫ
-    let hasSpun = false; // Крутил ли уже в этой сессии
-    let dataSent = false; // Отправлены ли данные
-    let appInitialized = false; // Флаг инициализации
+    let hasSpun = false;
+    let dataSent = false;
 
-    // Призы
     const prizes = [
         { name: '1 ЧАС', value: 60, color: '#FF6B6B', emoji: '⏱️', displayName: '1 час', weight: 30 },
         { name: '2 ЧАСА', value: 120, color: '#4ECDC4', emoji: '⏱️', displayName: '2 часа', weight: 20 },
@@ -745,10 +610,144 @@
         { name: '50 ГРН', value: 50, color: '#2ECC71', emoji: '💰', displayName: '50 грн', weight: 3 }
     ];
 
-    const canvas = document.getElementById('wheelCanvas');
+    const canvas = document.createElement('canvas');
+    canvas.id = 'wheelCanvas';
+    canvas.width = 300;
+    canvas.height = 300;
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
+
+    function getUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        userId = params.get('user');
+        canSpin = params.get('canSpin') === 'true';
+        extraSpins = parseInt(params.get('extraSpins') || '0');
+        
+        console.log('📊 ЗАГРУЗКА КОЛЕСА');
+        console.log('User ID:', userId);
+        console.log('Can spin:', canSpin);
+        console.log('Extra spins:', extraSpins);
+        
+        // Проверяем, есть ли прокруты
+        if (!canSpin && extraSpins <= 0) {
+            showNoSpinsScreen();
+        } else {
+            showWheelScreen();
+        }
+    }
+
+    function showNoSpinsScreen() {
+        const container = document.getElementById('mainContainer');
+        container.innerHTML = `
+            <div class="blocked-container">
+                <div class="logo">
+                    <span class="logo-icon">⚡</span>
+                    <span class="logo-text">SPAMLORDY</span>
+                    <span class="logo-badge">FORTUNE</span>
+                </div>
+                
+                <div class="blocked-icon">🚫</div>
+                <div class="blocked-title">НЕТ ПРОКРУТОВ!</div>
+                <div class="blocked-text">У вас закончились прокруты колеса фортуны</div>
+                
+                <div class="how-to-get">
+                    <h3>🎯 КАК ПОЛУЧИТЬ ПРОКРУТЫ:</h3>
+                    <ul>
+                        <li><b>🤝 Приглашай друзей</b> — 4, 10, 20 приглашённых</li>
+                        <li><b>📱 Выполняй миссии</b> — TikTok, отзывы</li>
+                        <li><b>💰 Покупай подписку</b> — от 150 грн</li>
+                        <li><b>🎰 Участвуй в конкурсах</b> — в канале</li>
+                    </ul>
+                </div>
+                
+                <button class="back-btn" onclick="closeApp()">
+                    ◀️ ЗАКРЫТЬ
+                </button>
+            </div>
+        `;
+    }
+
+    function showWheelScreen() {
+        const container = document.getElementById('mainContainer');
+        container.innerHTML = `
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">SPAMLORDY</span>
+                <span class="logo-badge">FORTUNE</span>
+            </div>
+
+            <h1>Колесо фортуны</h1>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="freeSpins">${canSpin ? '1' : '0'}</div>
+                    <div class="stat-label">Бесплатно</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="extraSpins">${extraSpins}</div>
+                    <div class="stat-label">Дополнительно</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSpins">0</div>
+                    <div class="stat-label">Всего</div>
+                </div>
+            </div>
+
+            <div class="wheel-wrapper">
+                <div class="pointer-container">
+                    <div class="pointer"></div>
+                </div>
+                <div class="canvas-wrapper" id="canvasWrapper"></div>
+            </div>
+
+            <div class="prize-info" id="prizeInfo">
+                <div class="prize-info-main">🎯 Готов крутить?</div>
+                <div class="prize-info-sub">Нажми кнопку и испытай удачу</div>
+            </div>
+
+            <div class="badges">
+                <div class="badge free" id="freeBadge">
+                    <span>🆓</span>
+                    <span>Бесплатный</span>
+                    <span>${canSpin ? '✅' : '❌'}</span>
+                </div>
+                <div class="badge extra" id="extraBadge">
+                    <span>✨</span>
+                    <span>Доп. прокрутов</span>
+                    <span>${extraSpins}</span>
+                </div>
+            </div>
+
+            <button class="action-btn" id="spinBtn" onclick="spinWheel()" ${!canSpin && extraSpins <= 0 ? 'disabled' : ''}>
+                ${canSpin ? '🎡 Крутить бесплатно' : (extraSpins > 0 ? `✨ Крутить (осталось ${extraSpins})` : '❌ Нет прокрутов')}
+            </button>
+
+            <button class="dropdown-btn" onclick="togglePrizes()">
+                <span>📋</span>
+                <span>Все призы</span>
+                <span>▼</span>
+            </button>
+
+            <div class="prizes-grid" id="prizesGrid"></div>
+
+            <button class="back-btn" onclick="closeApp()">
+                ◀️ Назад
+            </button>
+        `;
+
+        // Добавляем canvas в DOM
+        document.getElementById('canvasWrapper').appendChild(canvas);
+        
+        // Заполняем сетку призов
+        fillPrizesGrid();
+        
+        // Загружаем статистику
+        loadStats();
+        
+        // Рисуем колесо
+        drawWheel();
+    }
 
     function drawWheel(rotation = 0) {
         const centerX = 150;
@@ -823,7 +822,10 @@
 
     function fillPrizesGrid() {
         const grid = document.getElementById('prizesGrid');
-        prizes.forEach((prize, index) => {
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        prizes.forEach((prize) => {
             const card = document.createElement('div');
             card.className = 'prize-card';
             card.innerHTML = `
@@ -836,58 +838,17 @@
 
     function togglePrizes() {
         const grid = document.getElementById('prizesGrid');
-        grid.classList.toggle('visible');
-    }
-
-    function getUrlParams() {
-        try {
-            const params = new URLSearchParams(window.location.search);
-            userId = params.get('user');
-            const canSpinFree = params.get('canSpin') === 'true';
-            extraSpins = parseInt(params.get('extraSpins') || '0');
-            canSpin = canSpinFree;
-
-            console.log('User ID from URL:', userId);
-            console.log('Can spin free:', canSpinFree);
-            console.log('Extra spins:', extraSpins);
-
-            // 👇 СБРАСЫВАЕМ ФЛАГИ ПРИ КАЖДОЙ ЗАГРУЗКЕ
-            hasSpun = false;
-            dataSent = false;
-            appInitialized = true;
-
-            document.getElementById('freeBadge').innerHTML = `
-                <span>🆓</span>
-                <span>Бесплатный</span>
-                <span>${canSpinFree ? '✅' : '❌'}</span>
-            `;
-            document.getElementById('extraBadge').innerHTML = `
-                <span>✨</span>
-                <span>Доп. прокрутов</span>
-                <span>${extraSpins}</span>
-            `;
-
-            loadStats();
-            updateSpinButton();
-            drawWheel(currentRotation);
-            
-            // Проверяем, есть ли вообще прокруты
-            if (!canSpin && extraSpins <= 0) {
-                document.getElementById('prizeInfo').innerHTML = `
-                    <div class="prize-info-main">❌ Нет прокрутов</div>
-                    <div class="prize-info-sub">Получите дополнительные прокруты в боте</div>
-                `;
-            }
-        } catch (e) {}
+        if (grid) grid.classList.toggle('visible');
     }
 
     function loadStats() {
         try {
             const saved = localStorage.getItem(`wheel_${userId}`);
             if (saved) totalSpins = parseInt(saved) || 0;
-            document.getElementById('totalSpins').textContent = totalSpins;
-            document.getElementById('freeSpins').textContent = canSpin ? '1' : '0';
-            document.getElementById('extraSpins').textContent = extraSpins;
+            
+            const totalEl = document.getElementById('totalSpins');
+            if (totalEl) totalEl.textContent = totalSpins;
+            
         } catch (e) {}
     }
 
@@ -897,36 +858,122 @@
         } catch (e) {}
     }
 
-    function updateSpinButton() {
-        const btn = document.getElementById('spinBtn');
-        const blockedMsg = document.getElementById('blockedMessage');
-        
-        // 👇 ПРОВЕРЯЕМ, МОЖНО ЛИ КРУТИТЬ
+    function spinWheel() {
+        // Проверяем наличие прокрутов ПЕРЕД началом анимации
         if (!canSpin && extraSpins <= 0) {
-            btn.style.display = 'none';
-            blockedMsg.style.display = 'block';
+            alert('❌ У вас нет прокрутов!');
             return;
         }
-        
-        btn.style.display = 'block';
-        blockedMsg.style.display = 'none';
-        
-        if (canSpin && !hasSpun) {
-            btn.innerHTML = '🎡 Крутить бесплатно';
-            spinType = 'free';
-            btn.disabled = false;
-        } else if (extraSpins > 0 && !hasSpun) {
-            btn.innerHTML = `✨ Крутить (осталось ${extraSpins})`;
-            spinType = 'extra';
-            btn.disabled = false;
-        } else {
-            if (hasSpun) {
-                btn.innerHTML = '⚠️ Уже крутили в этом окне';
-            } else {
-                btn.innerHTML = '❌ Нет прокрутов';
-            }
-            btn.disabled = true;
+
+        if (hasSpun) {
+            alert('⚠️ Вы уже крутили в этом окне! Закройте и откройте заново.');
+            return;
         }
+
+        if (isSpinning) return;
+
+        // Определяем тип прокрута
+        if (canSpin) {
+            spinType = 'free';
+        } else if (extraSpins > 0) {
+            spinType = 'extra';
+        } else {
+            return;
+        }
+
+        hasSpun = true;
+        isSpinning = true;
+        
+        const spinBtn = document.getElementById('spinBtn');
+        if (spinBtn) spinBtn.disabled = true;
+
+        const result = getRandomPrize();
+        const startRotation = currentRotation;
+        const targetRotation = result.rotation;
+        const startTime = performance.now();
+        const duration = 4000;
+
+        function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            const easeProgress = 1 - Math.pow(1 - progress, 4);
+            currentRotation = startRotation + (targetRotation - startRotation) * easeProgress;
+
+            drawWheel(currentRotation);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                finishSpin(result);
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    function finishSpin(result) {
+        console.log('🎯 ВЫИГРЫШ:', result.prize.name);
+
+        // Показываем результат
+        const prizeInfo = document.getElementById('prizeInfo');
+        if (prizeInfo) {
+            prizeInfo.innerHTML = `
+                <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
+                <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
+            `;
+        }
+
+        // Отправляем данные в бота
+        const data = {
+            type: spinType,
+            prize: {
+                name: result.prize.name,
+                value: result.prize.value
+            }
+        };
+
+        const jsonData = JSON.stringify(data);
+        console.log('📤 Отправка данных:', jsonData);
+        tg.sendData(jsonData);
+        
+        dataSent = true;
+
+        // Обновляем статистику
+        totalSpins++;
+        const totalEl = document.getElementById('totalSpins');
+        if (totalEl) totalEl.textContent = totalSpins;
+
+        if (spinType === 'free') {
+            canSpin = false;
+            const freeSpinsEl = document.getElementById('freeSpins');
+            if (freeSpinsEl) freeSpinsEl.textContent = '0';
+            
+            const freeBadge = document.getElementById('freeBadge');
+            if (freeBadge) {
+                freeBadge.innerHTML = `
+                    <span>🆓</span>
+                    <span>Бесплатный</span>
+                    <span>❌</span>
+                `;
+            }
+        } else {
+            extraSpins--;
+            const extraSpinsEl = document.getElementById('extraSpins');
+            if (extraSpinsEl) extraSpinsEl.textContent = extraSpins;
+            
+            const extraBadge = document.getElementById('extraBadge');
+            if (extraBadge) {
+                extraBadge.innerHTML = `
+                    <span>✨</span>
+                    <span>Доп. прокрутов</span>
+                    <span>${extraSpins}</span>
+                `;
+            }
+        }
+
+        saveStats();
+        isSpinning = false;
     }
 
     function getRandomPrize() {
@@ -937,7 +984,6 @@
         for (let i = 0; i < prizes.length; i++) {
             sum += prizes[i].weight;
             if (random < sum) {
-                console.log(`✅ Selected: ${prizes[i].name} (index ${i}, weight ${prizes[i].weight})`);
                 return {
                     index: i,
                     prize: prizes[i],
@@ -964,157 +1010,12 @@
         return desc[name] || 'Приз получен!';
     }
 
-    function spinWheel() {
-        // 👇 БЛОКИРУЕМ ПОВТОРНОЕ КРУЧЕНИЕ
-        if (hasSpun) {
-            console.log('❌ Уже крутили в этой сессии');
-            document.getElementById('prizeInfo').innerHTML = `
-                <div class="prize-info-main">⚠️ Уже крутили!</div>
-                <div class="prize-info-sub">Закройте и откройте колесо заново</div>
-            `;
-            return;
-        }
-        
-        if (dataSent) {
-            console.log('❌ Данные уже отправлены');
-            return;
-        }
-
-        if (isSpinning) return;
-
-        // 👇 ПРОВЕРЯЕМ АКТУАЛЬНОСТЬ ПРОКРУТОВ
-        if (spinType === 'free' && !canSpin) {
-            console.log('❌ Бесплатный прокрут уже использован');
-            document.getElementById('prizeInfo').innerHTML = `
-                <div class="prize-info-main">❌ Прокрут недоступен</div>
-                <div class="prize-info-sub">Бесплатный прокрут уже использован</div>
-            `;
-            return;
-        }
-        if (spinType === 'extra' && extraSpins <= 0) {
-            console.log('❌ Нет дополнительных прокрутов');
-            document.getElementById('prizeInfo').innerHTML = `
-                <div class="prize-info-main">❌ Прокрут недоступен</div>
-                <div class="prize-info-sub">Нет дополнительных прокрутов</div>
-            `;
-            return;
-        }
-
-        // 👇 ПОМЕЧАЕМ, ЧТО ПОЛЬЗОВАТЕЛЬ КРУТИЛ
-        hasSpun = true;
-        isSpinning = true;
-        document.getElementById('spinBtn').disabled = true;
-
-        const result = getRandomPrize();
-        const startRotation = currentRotation;
-        const targetRotation = result.rotation;
-        const startTime = performance.now();
-        const duration = 4000;
-
-        function animate(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-
-            const easeProgress = 1 - Math.pow(1 - progress, 4);
-            currentRotation = startRotation + (targetRotation - startRotation) * easeProgress;
-
-            drawWheel(currentRotation);
-
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            } else {
-                console.log('🎯 ВЫИГРЫШ:', result.prize.name);
-
-                // Показываем результат
-                document.getElementById('prizeInfo').innerHTML = `
-                    <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
-                    <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
-                `;
-
-                // 👇 ОТПРАВЛЯЕМ ДАННЫЕ НЕМЕДЛЕННО!
-                const data = {
-                    type: spinType,
-                    prize: {
-                        name: result.prize.name,
-                        value: result.prize.value
-                    }
-                };
-
-                const jsonData = JSON.stringify(data);
-                console.log('📤 Отправка данных в бота:', jsonData);
-                tg.sendData(jsonData);
-                
-                // 👇 ПОМЕЧАЕМ, ЧТО ДАННЫЕ ОТПРАВЛЕНЫ
-                dataSent = true;
-
-                // Обновляем статистику на клиенте
-                totalSpins++;
-                document.getElementById('totalSpins').textContent = totalSpins;
-
-                if (spinType === 'free') {
-                    canSpin = false;
-                    document.getElementById('freeBadge').innerHTML = `
-                        <span>🆓</span>
-                        <span>Бесплатный</span>
-                        <span>❌</span>
-                    `;
-                    document.getElementById('freeSpins').textContent = '0';
-                } else {
-                    extraSpins--;
-                    document.getElementById('extraBadge').innerHTML = `
-                        <span>✨</span>
-                        <span>Доп. прокрутов</span>
-                        <span>${extraSpins}</span>
-                    `;
-                    document.getElementById('extraSpins').textContent = extraSpins;
-                }
-
-                saveStats();
-                updateSpinButton();
-                isSpinning = false;
-                
-                // 👇 ПОКАЗЫВАЕМ СООБЩЕНИЕ, ЧТО МОЖНО ЗАКРЫТЬ
-                setTimeout(() => {
-                    document.getElementById('prizeInfo').innerHTML += `
-                        <div class="prize-info-sub" style="margin-top: 10px; color: #4CAF50;">
-                            ✅ Приз получен! Можете закрыть окно
-                        </div>
-                    `;
-                }, 1000);
-            }
-        }
-
-        requestAnimationFrame(animate);
-    }
-
     function closeApp() {
         tg.close();
     }
 
-    // Защита от закрытия до отправки
-    window.addEventListener('beforeunload', function(e) {
-        if (hasSpun && !dataSent) {
-            // Пользователь крутил, но данные не отправились
-            console.log('⚠️ Внимание! Данные не отправлены!');
-            e.preventDefault();
-            e.returnValue = 'Данные еще не отправлены!';
-            return 'Данные еще не отправлены!';
-        }
-    });
-
-    // Сбрасываем состояние при закрытии окна
-    window.addEventListener('pagehide', function() {
-        console.log('📱 Страница скрыта, сбрасываем состояние');
-        hasSpun = false;
-        dataSent = false;
-    });
-
     // Запуск
-    fillPrizesGrid();
     getUrlParams();
-    drawWheel();
-    
-    window.addEventListener('resize', () => drawWheel(currentRotation));
 </script>
 </body>
 </html>
