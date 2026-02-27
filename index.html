@@ -886,7 +886,7 @@
         
         const spinBtn = document.getElementById('spinBtn');
         if (spinBtn) spinBtn.disabled = true;
-
+       forcedRandom = Math.random();
         const result = getRandomPrize();
         const startRotation = currentRotation;
         const targetRotation = result.rotation;
@@ -1003,25 +1003,16 @@ function getRandomPrize() {
                 rotation: targetRotation
             };
         }
-    
-
-    // Fallback (на всякий случай)
-    return {
-        index: 0,
-        prize: prizes[0],
-        rotation: currentRotation + Math.PI * 2 * 10
-    };
-}
     }
 
-
-    // fallback
+    // Fallback (редко, но пусть будет)
     return {
         index: 0,
         prize: prizes[0],
         rotation: currentRotation + Math.PI * 2 * 10
     };
 }
+
 
     function getDescription(name) {
         const desc = {
@@ -1048,6 +1039,7 @@ function getRandomPrize() {
 </script>
 </body>
 </html>
+
 
 
 
