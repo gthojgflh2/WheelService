@@ -1,0 +1,67 @@
+package com.example.bot;
+
+import com.example.db.UserDao;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import spark.Spark;
+
+public class WheelApiHandler {
+    private static final Logger log = LoggerFactory.getLogger(WheelApiHandler.class);
+    private static final Gson gson = new Gson();
+    private static SelfNotesBot bot;
+
+    public static void init(SelfNotesBot botInstance) {
+        bot = botInstance;
+        
+        // Настройка CORS
+        Spark.options("/api/*", (request, response) -> {
+            response.header("Access-Control-Allow-Origin", "*");
+            response.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            response.header("Access-Control-Allow-Headers", "Content-Type");
+            return "OK";
+        });
+
+        Spark.before((request, response) -> {
+            response.header("Access-Control-Allow-Origin", "*");
+            response.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            response.header("Access-Control-Allow-Headers", "Content-Type");
+            response.type("application/json");
+        });
+
+        // Эндпоинт для результатов колеса
+        Spark.post("/api/wheel", (request, response) -> {
+            try {
+                String body = request.body();
+                log.info("📥 Получен запрос: {}", body);
+                
+                JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+                long userId = json.get("userId").getAsLong();
+                JsonObject data = json.get("data").getAsJsonObject();
+                
+                // Обрабатываем результат
+                bot.getWheelService().handleWebAppData(userId, data.toString());
+                
+                JsonObject result = new JsonObject();
+                result.addProperty("success", true);
+                result.addProperty("message", "✅ Приз получен");
+                
+                return gson.toJson(result);
+                
+            } catch (Exception e) {
+                log.error("❌ Ошибка: {}", e.getMessage(), e);
+                
+                JsonObject error = new JsonObject();
+                error.addProperty("success", false);
+                error.addProperty("error", e.getMessage());
+                
+                response.status(500);
+                return gson.toJson(error);
+            }
+        });
+        
+        log.info("✅ API готов на порту 8080");
+    }
+}
