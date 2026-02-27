@@ -559,6 +559,93 @@
             left: 0;
         }
 
+        /* =========================
+           ДОБАВЛЕНО: Красивый центр + CSS анимация
+           ========================= */
+        .wheel-center {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 64px;
+            height: 64px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 20;
+            display: grid;
+            place-items: center;
+            filter: drop-shadow(0 10px 18px rgba(0,0,0,0.55));
+        }
+
+        .wheel-center::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 45%, rgba(0,0,0,0.35) 100%),
+                        linear-gradient(135deg, rgba(100,108,255,0.9), rgba(157,80,187,0.9));
+            box-shadow:
+                0 0 0 2px rgba(255,255,255,0.16) inset,
+                0 0 28px rgba(100,108,255,0.35),
+                0 0 38px rgba(157,80,187,0.25);
+            animation: centerPulse 1.6s ease-in-out infinite;
+        }
+
+        .wheel-center-ring {
+            position: absolute;
+            inset: -10px;
+            border-radius: 50%;
+            background:
+                conic-gradient(from 0deg,
+                    rgba(100,108,255,0.0),
+                    rgba(100,108,255,0.55),
+                    rgba(157,80,187,0.55),
+                    rgba(100,108,255,0.0)
+                );
+            filter: blur(0.2px);
+            opacity: 0.9;
+            animation: centerSpin 2.2s linear infinite;
+        }
+
+        .wheel-center-icon {
+            position: relative;
+            z-index: 1;
+            font-size: 26px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow:
+                0 2px 6px rgba(0,0,0,0.55),
+                0 0 18px rgba(100,108,255,0.55);
+            animation: iconFloat 1.4s ease-in-out infinite;
+        }
+
+        @keyframes centerSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes centerPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow:
+                    0 0 0 2px rgba(255,255,255,0.16) inset,
+                    0 0 24px rgba(100,108,255,0.30),
+                    0 0 34px rgba(157,80,187,0.20);
+            }
+            50% {
+                transform: scale(1.06);
+                box-shadow:
+                    0 0 0 2px rgba(255,255,255,0.22) inset,
+                    0 0 34px rgba(100,108,255,0.45),
+                    0 0 46px rgba(157,80,187,0.33);
+            }
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-2px) scale(1.03); }
+        }
+
         @media (max-width: 380px) {
             .container {
                 padding: 20px 15px;
@@ -597,6 +684,9 @@
     let hasSpun = false;
     let dataSent = false;
 
+    // ДОБАВЛЕНО: чтобы forcedRandom не был "необъявленным"
+    let forcedRandom = null;
+
     const prizes = [
         { name: '1 ЧАС', value: 60, color: '#FF6B6B', emoji: '⏱️', displayName: '1 час', weight: 30 },
         { name: '2 ЧАСА', value: 120, color: '#4ECDC4', emoji: '⏱️', displayName: '2 часа', weight: 20 },
@@ -607,7 +697,11 @@
         { name: '+1', value: 1, color: '#9B59B6', emoji: '✨', displayName: '+1 прокрут', weight: 8 },
         { name: 'ПРОМО', value: 50, color: '#F1C40F', emoji: '🎟️', displayName: 'Промокод', weight: 1 },
         { name: '25 ГРН', value: 25, color: '#E67E22', emoji: '💰', displayName: '25 грн', weight: 12 },
-        { name: '50 ГРН', value: 50, color: '#2ECC71', emoji: '💰', displayName: '50 грн', weight: 3 }
+        { name: '50 ГРН', value: 50, color: '#2ECC71', emoji: '💰', displayName: '50 грн', weight: 3 },
+
+        // ДОБАВЛЕНО: 2 поля "ничего"
+        { name: 'НИЧЕГО', value: 0, color: '#2C3E50', emoji: '😶', displayName: 'Ничего', weight: 25 },
+        { name: 'ПУСТО', value: 0, color: '#34495E', emoji: '🫥', displayName: 'Пусто', weight: 18 }
     ];
 
     const canvas = document.createElement('canvas');
@@ -623,12 +717,12 @@
         userId = params.get('user');
         canSpin = params.get('canSpin') === 'true';
         extraSpins = parseInt(params.get('extraSpins') || '0');
-        
+
         console.log('📊 ЗАГРУЗКА КОЛЕСА');
         console.log('User ID:', userId);
         console.log('Can spin:', canSpin);
         console.log('Extra spins:', extraSpins);
-        
+
         // Проверяем, есть ли прокруты
         if (!canSpin && extraSpins <= 0) {
             showNoSpinsScreen();
@@ -646,11 +740,11 @@
                     <span class="logo-text">SPAMLORDY</span>
                     <span class="logo-badge">FORTUNE</span>
                 </div>
-                
+
                 <div class="blocked-icon">🚫</div>
                 <div class="blocked-title">НЕТ ПРОКРУТОВ!</div>
                 <div class="blocked-text">У вас закончились прокруты колеса фортуны</div>
-                
+
                 <div class="how-to-get">
                     <h3>🎯 КАК ПОЛУЧИТЬ ПРОКРУТЫ:</h3>
                     <ul>
@@ -660,7 +754,7 @@
                         <li><b>🎰 Участвуй в конкурсах</b> — в канале</li>
                     </ul>
                 </div>
-                
+
                 <button class="back-btn" onclick="closeApp()">
                     ◀️ ЗАКРЫТЬ
                 </button>
@@ -737,14 +831,24 @@
         `;
 
         // Добавляем canvas в DOM
-        document.getElementById('canvasWrapper').appendChild(canvas);
-        
+        const wrapper = document.getElementById('canvasWrapper');
+        wrapper.appendChild(canvas);
+
+        // ДОБАВЛЕНО: центр (CSS-анимация поверх canvas)
+        const centerEl = document.createElement('div');
+        centerEl.className = 'wheel-center';
+        centerEl.innerHTML = `
+            <div class="wheel-center-ring"></div>
+            <div class="wheel-center-icon">⚡</div>
+        `;
+        wrapper.appendChild(centerEl);
+
         // Заполняем сетку призов
         fillPrizesGrid();
-        
+
         // Загружаем статистику
         loadStats();
-        
+
         // Рисуем колесо
         drawWheel();
     }
@@ -796,20 +900,24 @@
             ctx.restore();
         }
 
-        // Центр
+        // Центр (круг) — а сам значок ⚡ теперь красиво анимируется CSS-ом поверх canvas
         ctx.beginPath();
         ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
-        ctx.fillStyle = '#646CFF';
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = '#646CFF';
+
+        const coreGrad = ctx.createRadialGradient(centerX - 8, centerY - 8, 2, centerX, centerY, 28);
+        coreGrad.addColorStop(0, 'rgba(255,255,255,0.22)');
+        coreGrad.addColorStop(0.35, '#646CFF');
+        coreGrad.addColorStop(1, '#2a2d7a');
+
+        ctx.fillStyle = coreGrad;
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = 'rgba(100,108,255,0.65)';
         ctx.fill();
-        
+
         ctx.shadowBlur = 0;
-        ctx.font = 'bold 22px Montserrat, sans-serif';
-        ctx.fillStyle = '#FFFFFF';
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowBlur = 6;
-        ctx.fillText('⚡', centerX, centerY);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+        ctx.stroke();
     }
 
     function adjustColor(color, percent) {
@@ -823,7 +931,7 @@
     function fillPrizesGrid() {
         const grid = document.getElementById('prizesGrid');
         if (!grid) return;
-        
+
         grid.innerHTML = '';
         prizes.forEach((prize) => {
             const card = document.createElement('div');
@@ -845,10 +953,10 @@
         try {
             const saved = localStorage.getItem(`wheel_${userId}`);
             if (saved) totalSpins = parseInt(saved) || 0;
-            
+
             const totalEl = document.getElementById('totalSpins');
             if (totalEl) totalEl.textContent = totalSpins;
-            
+
         } catch (e) {}
     }
 
@@ -883,10 +991,12 @@
 
         hasSpun = true;
         isSpinning = true;
-        
+
         const spinBtn = document.getElementById('spinBtn');
         if (spinBtn) spinBtn.disabled = true;
-       forcedRandom = Math.random();
+
+        forcedRandom = Math.random();
+
         const result = getRandomPrize();
         const startRotation = currentRotation;
         const targetRotation = result.rotation;
@@ -936,7 +1046,7 @@
         const jsonData = JSON.stringify(data);
         console.log('📤 Отправка данных:', jsonData);
         tg.sendData(jsonData);
-        
+
         dataSent = true;
 
         // Обновляем статистику
@@ -948,7 +1058,7 @@
             canSpin = false;
             const freeSpinsEl = document.getElementById('freeSpins');
             if (freeSpinsEl) freeSpinsEl.textContent = '0';
-            
+
             const freeBadge = document.getElementById('freeBadge');
             if (freeBadge) {
                 freeBadge.innerHTML = `
@@ -961,7 +1071,7 @@
             extraSpins--;
             const extraSpinsEl = document.getElementById('extraSpins');
             if (extraSpinsEl) extraSpinsEl.textContent = extraSpins;
-            
+
             const extraBadge = document.getElementById('extraBadge');
             if (extraBadge) {
                 extraBadge.innerHTML = `
@@ -976,43 +1086,43 @@
         isSpinning = false;
     }
 
-function getRandomPrize() {
-    const anglePerPrize = (Math.PI * 2) / prizes.length;
-    const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+    function getRandomPrize() {
+        const anglePerPrize = (Math.PI * 2) / prizes.length;
+        const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
 
-    if (forcedRandom === null) {
-        forcedRandom = Math.random();
-    }
-
-    let randomValue = forcedRandom * totalWeight;
-
-    let sum = 0;
-    for (let i = 0; i < prizes.length; i++) {
-        sum += prizes[i].weight;
-        if (randomValue < sum) {
-
-            const desiredPointerAngle = -Math.PI / 2; 
-            const sectorMiddle = (i * anglePerPrize) + anglePerPrize / 2;
-
-            const targetRotation =
-                currentRotation +
-                Math.PI * 2 * 10 +
-                (desiredPointerAngle - sectorMiddle);
-
-            return {
-                index: i,
-                prize: prizes[i],
-                rotation: targetRotation
-            };
+        if (forcedRandom === null) {
+            forcedRandom = Math.random();
         }
-    }
 
-    return {
-        index: 0,
-        prize: prizes[0],
-        rotation: currentRotation + Math.PI * 2 * 10
-    };
-}
+        let randomValue = forcedRandom * totalWeight;
+
+        let sum = 0;
+        for (let i = 0; i < prizes.length; i++) {
+            sum += prizes[i].weight;
+            if (randomValue < sum) {
+
+                const desiredPointerAngle = -Math.PI / 2;
+                const sectorMiddle = (i * anglePerPrize) + anglePerPrize / 2;
+
+                const targetRotation =
+                    currentRotation +
+                    Math.PI * 2 * 10 +
+                    (desiredPointerAngle - sectorMiddle);
+
+                return {
+                    index: i,
+                    prize: prizes[i],
+                    rotation: targetRotation
+                };
+            }
+        }
+
+        return {
+            index: 0,
+            prize: prizes[0],
+            rotation: currentRotation + Math.PI * 2 * 10
+        };
+    }
 
     function getDescription(name) {
         const desc = {
@@ -1025,7 +1135,11 @@ function getRandomPrize() {
             '+1': '✨ Дополнительный прокрут',
             'ПРОМО': '🎟 Промокод на 50 грн',
             '25 ГРН': '💰 25 грн на баланс',
-            '50 ГРН': '💰 50 грн на баланс'
+            '50 ГРН': '💰 50 грн на баланс',
+
+            // ДОБАВЛЕНО: описания для "ничего"
+            'НИЧЕГО': '😶 Увы, пусто. Повезёт в следующий раз!',
+            'ПУСТО': '🫥 Ничего не выпало. Крути ещё!'
         };
         return desc[name] || 'Приз получен!';
     }
@@ -1039,12 +1153,3 @@ function getRandomPrize() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
