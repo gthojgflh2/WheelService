@@ -976,25 +976,36 @@
         isSpinning = false;
     }
 
-    function getRandomPrize() {
-        const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
-        let random = Math.random() * totalWeight;
+function getRandomPrize() {
+    const anglePerPrize = (Math.PI * 2) / prizes.length;
+    const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+    let random = Math.random() * totalWeight;
 
-        let sum = 0;
-        for (let i = 0; i < prizes.length; i++) {
-            sum += prizes[i].weight;
-            if (random < sum) {
-               return {
-    index: i,
-    prize: prizes[i],
-    rotation: currentRotation
-              + Math.PI * 2 * 10
-              + (Math.PI * 2 - (i * anglePerPrize) - anglePerPrize / 2)
-};
-            }
+    let sum = 0;
+    for (let i = 0; i < prizes.length; i++) {
+        sum += prizes[i].weight;
+        if (random < sum) {
+
+            const targetRotation =
+                currentRotation +
+                Math.PI * 2 * 10 +                       // 10 оборотов
+                (Math.PI * 2 - (i * anglePerPrize) - anglePerPrize / 2); // точный центр сектора
+
+            return {
+                index: i,
+                prize: prizes[i],
+                rotation: targetRotation
+            };
         }
-        return { index: 0, prize: prizes[0], rotation: currentRotation + Math.PI * 2 * 10 };
     }
+
+    // fallback
+    return {
+        index: 0,
+        prize: prizes[0],
+        rotation: currentRotation + Math.PI * 2 * 10
+    };
+}
 
     function getDescription(name) {
         const desc = {
@@ -1021,4 +1032,5 @@
 </script>
 </body>
 </html>
+
 
