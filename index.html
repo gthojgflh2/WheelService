@@ -729,6 +729,7 @@
     // 👇 ФЛАГИ ДЛЯ ЗАЩИТЫ
     let hasSpun = false; // Крутил ли уже в этой сессии
     let dataSent = false; // Отправлены ли данные
+    let appInitialized = false; // Флаг инициализации
 
     // Призы
     const prizes = [
@@ -850,9 +851,10 @@
             console.log('Can spin free:', canSpinFree);
             console.log('Extra spins:', extraSpins);
 
-            // 👇 СБРАСЫВАЕМ ФЛАГИ ПРИ ЗАГРУЗКЕ
+            // 👇 СБРАСЫВАЕМ ФЛАГИ ПРИ КАЖДОЙ ЗАГРУЗКЕ
             hasSpun = false;
             dataSent = false;
+            appInitialized = true;
 
             document.getElementById('freeBadge').innerHTML = `
                 <span>🆓</span>
@@ -868,6 +870,14 @@
             loadStats();
             updateSpinButton();
             drawWheel(currentRotation);
+            
+            // Проверяем, есть ли вообще прокруты
+            if (!canSpin && extraSpins <= 0) {
+                document.getElementById('prizeInfo').innerHTML = `
+                    <div class="prize-info-main">❌ Нет прокрутов</div>
+                    <div class="prize-info-sub">Получите дополнительные прокруты в боте</div>
+                `;
+            }
         } catch (e) {}
     }
 
@@ -901,16 +911,20 @@
         btn.style.display = 'block';
         blockedMsg.style.display = 'none';
         
-        if (canSpin) {
+        if (canSpin && !hasSpun) {
             btn.innerHTML = '🎡 Крутить бесплатно';
             spinType = 'free';
             btn.disabled = false;
-        } else if (extraSpins > 0) {
+        } else if (extraSpins > 0 && !hasSpun) {
             btn.innerHTML = `✨ Крутить (осталось ${extraSpins})`;
             spinType = 'extra';
             btn.disabled = false;
         } else {
-            btn.innerHTML = '❌ Нет прокрутов';
+            if (hasSpun) {
+                btn.innerHTML = '⚠️ Уже крутили в этом окне';
+            } else {
+                btn.innerHTML = '❌ Нет прокрутов';
+            }
             btn.disabled = true;
         }
     }
@@ -968,12 +982,21 @@
 
         if (isSpinning) return;
 
+        // 👇 ПРОВЕРЯЕМ АКТУАЛЬНОСТЬ ПРОКРУТОВ
         if (spinType === 'free' && !canSpin) {
             console.log('❌ Бесплатный прокрут уже использован');
+            document.getElementById('prizeInfo').innerHTML = `
+                <div class="prize-info-main">❌ Прокрут недоступен</div>
+                <div class="prize-info-sub">Бесплатный прокрут уже использован</div>
+            `;
             return;
         }
         if (spinType === 'extra' && extraSpins <= 0) {
             console.log('❌ Нет дополнительных прокрутов');
+            document.getElementById('prizeInfo').innerHTML = `
+                <div class="prize-info-main">❌ Прокрут недоступен</div>
+                <div class="prize-info-sub">Нет дополнительных прокрутов</div>
+            `;
             return;
         }
 
@@ -1073,11 +1096,17 @@
         if (hasSpun && !dataSent) {
             // Пользователь крутил, но данные не отправились
             console.log('⚠️ Внимание! Данные не отправлены!');
-            // Можно показать предупреждение
             e.preventDefault();
             e.returnValue = 'Данные еще не отправлены!';
             return 'Данные еще не отправлены!';
         }
+    });
+
+    // Сбрасываем состояние при закрытии окна
+    window.addEventListener('pagehide', function() {
+        console.log('📱 Страница скрыта, сбрасываем состояние');
+        hasSpun = false;
+        dataSent = false;
     });
 
     // Запуск
