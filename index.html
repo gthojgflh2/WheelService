@@ -700,6 +700,8 @@
     console.log('Telegram WebApp version:', tg.version);
     console.log('Platform:', tg.platform);
 
+    // 👇 ЗАПРЕЩАЕМ АВТОМАТИЧЕСКОЕ ЗАКРЫТИЕ
+    tg.disableClosingConfirmation();
 
     let userId = null;
     let spinType = 'free';
@@ -908,6 +910,7 @@
         for (let i = 0; i < weights.length; i++) {
             sum += weights[i];
             if (random < sum) {
+                console.log(`Selected prize index ${i}: ${prizes[i].name} with weight ${weights[i]}`);
                 return {
                     index: i,
                     prize: prizes[i],
@@ -915,6 +918,7 @@
                 };
             }
         }
+        console.log('Fallback to index 0');
         return { index: 0, prize: prizes[0], rotation: currentRotation + Math.PI * 2 * 10 };
     }
 
@@ -964,7 +968,7 @@
                 tg.sendData(JSON.stringify(data));
 
                 console.log('Data sent to bot:', data);
-                
+
                 // Показываем красивое название пользователю
                 let displayPrizeName = result.prize.displayName;
 
@@ -997,9 +1001,6 @@
                 saveStats();
                 updateSpinButton();
                 isSpinning = false;
-                
-                // 👇 УБРАЛ tg.showAlert - теперь не закрывается
-                // tg.showAlert(`✅ Вы выиграли: ${displayPrizeName}!`);
             }
         }
 
