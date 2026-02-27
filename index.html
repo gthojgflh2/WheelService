@@ -2,70 +2,1048 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spamlordy | Колесо фортуны</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Стили без изменений - оставь как есть */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: radial-gradient(circle at 30% 30%, #1a1b4b, #0a0b1a);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 12px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.2)"/><circle cx="50" cy="30" r="1.5" fill="rgba(100,108,255,0.3)"/><circle cx="80" cy="70" r="1" fill="rgba(255,255,255,0.2)"/><circle cx="30" cy="80" r="2" fill="rgba(157,80,187,0.3)"/></svg>');
+            background-repeat: repeat;
+            opacity: 0.5;
+            animation: particles 60s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes particles {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100px); }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 24px 20px;
+            text-align: center;
+            background: rgba(18, 20, 35, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+            0 0 40px rgba(100, 108, 255, 0.2);
+            position: relative;
+            z-index: 1;
+            animation: containerAppear 0.5s ease-out;
+        }
+
+        @keyframes containerAppear {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo-icon {
+            font-size: 42px;
+            filter: drop-shadow(0 0 20px #646CFF);
+            animation: float 3s ease infinite;
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #646CFF, #9D50BB, #646CFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+            letter-spacing: 1.5px;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, #646CFF, #9D50BB);
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 4px 20px rgba(100, 108, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff, #c0c4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(100, 108, 255, 0.5);
+            letter-spacing: 1px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 30px;
+            padding: 18px 5px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(100,108,255,0.2), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(100, 108, 255, 0.3);
+            box-shadow: 0 15px 30px rgba(100, 108, 255, 0.2);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+            animation: rotate 4s linear infinite;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #646CFF, #9D50BB);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wheel-wrapper {
+            position: relative;
+            width: fit-content;
+            margin: 20px auto 30px;
+            padding: 10px;
+            animation: scaleIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .pointer-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: -10px;
+            z-index: 10;
+        }
+
+        .pointer {
+            width: 0;
+            height: 0;
+            border-left: 22px solid transparent;
+            border-right: 22px solid transparent;
+            border-top: 44px solid #ff4d4d;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+            position: relative;
+            animation: pointerWobble 2s ease infinite;
+            transform-origin: top center;
+        }
+
+        @keyframes pointerWobble {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            75% { transform: rotate(3deg); }
+        }
+
+        .pointer::after {
+            content: '';
+            position: absolute;
+            top: -40px;
+            left: -8px;
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle, #646CFF, #9D50BB);
+            border-radius: 50%;
+            box-shadow: 0 0 25px #646CFF;
+            animation: pulseGlow 1.5s ease infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px #646CFF; }
+            50% { box-shadow: 0 0 35px #9D50BB; }
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            width: fit-content;
+            margin: 0 auto;
+        }
+
+        canvas {
+            display: block;
+            width: 290px;
+            height: 290px;
+            border-radius: 50%;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8),
+            0 0 0 3px rgba(255,255,255,0.1),
+            0 0 0 6px rgba(100,108,255,0.2);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            image-rendering: high-quality;
+            cursor: pointer;
+            margin: 0 auto;
+        }
+
+        canvas:hover {
+            transform: scale(1.02);
+            box-shadow: 0 30px 60px rgba(100,108,255,0.3),
+            0 0 0 3px rgba(255,255,255,0.2),
+            0 0 0 8px rgba(100,108,255,0.3);
+        }
+
+        .prize-info {
+            background: linear-gradient(135deg, rgba(0,0,0,0.5), rgba(18,20,35,0.8));
+            border-radius: 50px;
+            padding: 20px;
+            margin: 25px 0;
+            border: 1px solid rgba(100,108,255,0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 0 30px rgba(100,108,255,0.1);
+            position: relative;
+            overflow: hidden;
+            animation: glowPulse 3s ease infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { border-color: rgba(100,108,255,0.3); }
+            50% { border-color: rgba(157,80,187,0.5); }
+        }
+
+        .prize-info::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(100,108,255,0.2), transparent 70%);
+            animation: rotate 8s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .prize-info-main {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #c0c4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .prize-info-sub {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .badges {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            animation: fadeInUp 0.6s ease-out 0.3s both;
+        }
+
+        .badge {
+            flex: 1;
+            padding: 16px 12px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .badge::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .badge:hover {
+            transform: translateY(-3px) scale(1.02);
+        }
+
+        .badge:hover::before {
+            opacity: 1;
+            animation: rotate 3s linear infinite;
+        }
+
+        .badge.free {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .badge.extra {
+            background: rgba(255, 152, 0, 0.1);
+            color: #FF9800;
+            border-color: rgba(255, 152, 0, 0.3);
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #646CFF, #9D50BB, #646CFF);
+            background-size: 200% 200%;
+            color: white;
+            border: none;
+            padding: 20px 30px;
+            border-radius: 60px;
+            font-size: 20px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px rgba(100, 108, 255, 0.4),
+            0 0 0 2px rgba(255, 255, 255, 0.2);
+            width: 100%;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            animation: gradient 3s ease infinite, bounce 2s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3), transparent 70%);
+            animation: rotate 4s linear infinite;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(100, 108, 255, 0.6),
+            0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        .action-btn:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 10px 20px rgba(100, 108, 255, 0.4);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            background: linear-gradient(135deg, #444, #666);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+            animation: none;
+        }
+
+        .dropdown-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(100, 108, 255, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 16px;
+            width: 100%;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dropdown-btn:hover {
+            background: rgba(100, 108, 255, 0.1);
+            border-color: #646CFF;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(100, 108, 255, 0.3);
+        }
+
+        .prizes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .prizes-grid.visible {
+            max-height: 600px;
+            margin-top: 15px;
+        }
+
+        .prize-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(100, 108, 255, 0.2);
+            border-radius: 30px;
+            padding: 12px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            animation: cardAppear 0.5s ease-out;
+            cursor: pointer;
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .prize-card:hover {
+            transform: translateX(5px) scale(1.02);
+            border-color: #646CFF;
+            background: rgba(100, 108, 255, 0.1);
+            box-shadow: 0 5px 20px rgba(100, 108, 255, 0.3);
+        }
+
+        .prize-color {
+            width: 28px;
+            height: 28px;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+
+        .prize-card:hover .prize-color {
+            transform: rotate(360deg);
+            border-color: white;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            border-radius: 50px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .back-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(100,108,255,0.2), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(100, 108, 255, 0.1);
+            border-color: #646CFF;
+            transform: translateY(-3px);
+            color: white;
+            box-shadow: 0 10px 25px rgba(100, 108, 255, 0.3);
+        }
+
+        .back-btn:hover::before {
+            opacity: 1;
+            animation: rotate 3s linear infinite;
+        }
+
+        @media (max-width: 380px) {
+            .container {
+                padding: 20px 15px;
+            }
+            canvas {
+                width: 250px;
+                height: 250px;
+            }
+            .logo-text {
+                font-size: 28px;
+            }
+            .logo-badge {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+            .badge {
+                font-size: 12px;
+                padding: 14px 8px;
+            }
+            .prize-card {
+                font-size: 11px;
+                padding: 10px 8px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h3>🎡 Колесо фортуны (тест)</h3>
-    
-    <button onclick="spinWheel()" style="padding: 20px; font-size: 20px;">🎡 КРУТИТЬ</button>
-    
-    <div id="result" style="margin-top: 20px; font-size: 18px;"></div>
+<div class="container">
+    <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <span class="logo-text">SPAMLORDY</span>
+        <span class="logo-badge">FORTUNE</span>
+    </div>
 
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
-        
-        console.log('WebApp version:', tg.version);
-        
-        const prizes = [
-            { name: '1 ЧАС', value: 60, emoji: '⏱️', display: '1 час' },
-            { name: '2 ЧАСА', value: 120, emoji: '⏱️', display: '2 часа' },
-            { name: '3 ЧАСА', value: 180, emoji: '⏱️', display: '3 часа' },
-            { name: '6 ЧАСОВ', value: 360, emoji: '⏱️', display: '6 часов' },
-            { name: '2 СЛОТА', value: 2, emoji: '🧩', display: '2 слота' },
-            { name: 'ЛОТЕРЕЯ', value: 1, emoji: '🎰', display: 'Лотерея' },
-            { name: '+1', value: 1, emoji: '✨', display: '+1 прокрут' },
-            { name: 'ПРОМО', value: 50, emoji: '🎟️', display: 'Промокод' },
-            { name: '25 ГРН', value: 25, emoji: '💰', display: '25 грн' },
-            { name: '50 ГРН', value: 50, emoji: '💰', display: '50 грн' }
-        ];
-        
-        function getRandomPrize() {
-            const weights = [30, 20, 15, 5, 2, 4, 8, 1, 12, 3];
-            const total = weights.reduce((a, b) => a + b, 0);
-            let rand = Math.random() * total;
-            
-            let sum = 0;
-            for (let i = 0; i < weights.length; i++) {
-                sum += weights[i];
-                if (rand < sum) {
-                    console.log(`🎯 Выпал: ${prizes[i].name} (вес ${weights[i]})`);
-                    return prizes[i];
-                }
+    <h1>Колесо фортуны</h1>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="freeSpins">0</div>
+            <div class="stat-label">Бесплатно</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="extraSpins">0</div>
+            <div class="stat-label">Дополнительно</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="totalSpins">0</div>
+            <div class="stat-label">Всего</div>
+        </div>
+    </div>
+
+    <div class="wheel-wrapper">
+        <div class="pointer-container">
+            <div class="pointer"></div>
+        </div>
+        <div class="canvas-wrapper">
+            <canvas id="wheelCanvas" width="300" height="300"></canvas>
+        </div>
+    </div>
+
+    <div class="prize-info" id="prizeInfo">
+        <div class="prize-info-main">🎯 Готов крутить?</div>
+        <div class="prize-info-sub">Нажми кнопку и испытай удачу</div>
+    </div>
+
+    <div class="badges">
+        <div class="badge free" id="freeBadge">
+            <span>🆓</span>
+            <span>Бесплатный</span>
+            <span>✅</span>
+        </div>
+        <div class="badge extra" id="extraBadge">
+            <span>✨</span>
+            <span>Доп. прокрутов</span>
+            <span>0</span>
+        </div>
+    </div>
+
+    <button class="action-btn" id="spinBtn" onclick="spinWheel()">
+        🎡 Крутить
+    </button>
+
+    <button class="dropdown-btn" onclick="togglePrizes()">
+        <span>📋</span>
+        <span>Все призы</span>
+        <span>▼</span>
+    </button>
+
+    <div class="prizes-grid" id="prizesGrid"></div>
+
+    <button class="back-btn" onclick="closeApp()">
+        ◀️ Назад
+    </button>
+</div>
+
+<script>
+    let tg = window.Telegram.WebApp;
+
+    console.log('Telegram WebApp version:', tg.version);
+    console.log('Platform:', tg.platform);
+
+    // 👇 ЗАПРЕЩАЕМ АВТОМАТИЧЕСКОЕ ЗАКРЫТИЕ
+    tg.disableClosingConfirmation();
+
+    // 👇 ДОБАВЛЯЕМ ОБРАБОТЧИКИ СОБЫТИЙ
+    tg.onEvent('mainButtonClicked', function() {
+        console.log('Main button clicked');
+    });
+
+    // 👇 ПЕРЕХВАТЫВАЕМ ЗАКРЫТИЕ
+    window.addEventListener('beforeunload', function(e) {
+        console.log('Attempting to close app');
+        // Не даем закрыться
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    });
+
+    let userId = null;
+    let spinType = 'free';
+    let canSpin = true;
+    let extraSpins = 0;
+    let isSpinning = false;
+    let totalSpins = 0;
+    let currentRotation = 0;
+
+    // 👇 ВАЖНО: ПРОВЕРЯЕМ СООТВЕТСТВИЕ ПРИЗОВ
+    const prizes = [
+        { name: '1 ЧАС', value: 60, color: '#FF6B6B', emoji: '⏱️', displayName: '1 час', weight: 30 },
+        { name: '2 ЧАСА', value: 120, color: '#4ECDC4', emoji: '⏱️', displayName: '2 часа', weight: 20 },
+        { name: '3 ЧАСА', value: 180, color: '#45B7D1', emoji: '⏱️', displayName: '3 часа', weight: 15 },
+        { name: '6 ЧАСОВ', value: 360, color: '#96CEB4', emoji: '⏱️', displayName: '6 часов', weight: 5 },
+        { name: '2 СЛОТА', value: 2, color: '#FFE194', emoji: '🧩', displayName: '2 слота', weight: 2 },
+        { name: 'ЛОТЕРЕЯ', value: 1, color: '#D4A5A5', emoji: '🎰', displayName: 'Лотерея', weight: 4 },
+        { name: '+1', value: 1, color: '#9B59B6', emoji: '✨', displayName: '+1 прокрут', weight: 8 },
+        { name: 'ПРОМО', value: 50, color: '#F1C40F', emoji: '🎟️', displayName: 'Промокод', weight: 1 },
+        { name: '25 ГРН', value: 25, color: '#E67E22', emoji: '💰', displayName: '25 грн', weight: 12 },
+        { name: '50 ГРН', value: 50, color: '#2ECC71', emoji: '💰', displayName: '50 грн', weight: 3 }
+    ];
+
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    tg.ready();
+    tg.expand();
+
+    function drawWheel(rotation = 0) {
+        const centerX = 150;
+        const centerY = 150;
+        const radius = 140;
+        const anglePerPrize = (Math.PI * 2) / prizes.length;
+
+        ctx.clearRect(0, 0, 300, 300);
+
+        for (let i = 0; i < prizes.length; i++) {
+            const startAngle = i * anglePerPrize + rotation;
+            const endAngle = (i + 1) * anglePerPrize + rotation;
+
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.closePath();
+
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+            gradient.addColorStop(0, prizes[i].color);
+            gradient.addColorStop(0.7, adjustColor(prizes[i].color, -30));
+            gradient.addColorStop(1, adjustColor(prizes[i].color, -50));
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(startAngle + anglePerPrize / 2);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+
+            ctx.font = 'bold 10px Montserrat, sans-serif';
+
+            ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+            ctx.lineWidth = 3;
+
+            let displayText = prizes[i].displayName;
+            ctx.strokeText(prizes[i].emoji + ' ' + displayText, 80, 0);
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillText(prizes[i].emoji + ' ' + displayText, 80, 0);
+
+            ctx.restore();
+        }
+
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#646CFF';
+
+        const centerGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 30);
+        centerGradient.addColorStop(0, '#646CFF');
+        centerGradient.addColorStop(0.5, '#9D50BB');
+        centerGradient.addColorStop(1, '#646CFF');
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
+        ctx.fillStyle = centerGradient;
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(centerX - 5, centerY - 5, 5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+        ctx.font = 'bold 22px Montserrat, sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 6;
+        ctx.fillText('⚡', centerX, centerY);
+    }
+
+    function adjustColor(color, percent) {
+        const num = parseInt(color.replace('#', ''), 16);
+        const r = Math.max(0, Math.min(255, (num >> 16) + percent));
+        const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + percent));
+        const b = Math.max(0, Math.min(255, (num & 0x0000FF) + percent));
+        return '#' + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
+    }
+
+    function fillPrizesGrid() {
+        const grid = document.getElementById('prizesGrid');
+        prizes.forEach((prize, index) => {
+            const card = document.createElement('div');
+            card.className = 'prize-card';
+            card.style.animationDelay = `${index * 0.05}s`;
+            card.innerHTML = `
+                    <div class="prize-color" style="background: ${prize.color};"></div>
+                    <span>${prize.emoji} ${prize.displayName}</span>
+                `;
+            grid.appendChild(card);
+        });
+    }
+
+    function togglePrizes() {
+        const grid = document.getElementById('prizesGrid');
+        grid.classList.toggle('visible');
+    }
+
+    function getUrlParams() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            userId = params.get('user');
+            const canSpinFree = params.get('canSpin') === 'true';
+            extraSpins = parseInt(params.get('extraSpins') || '0');
+            canSpin = canSpinFree;
+
+            document.getElementById('freeBadge').innerHTML = `
+                    <span>🆓</span>
+                    <span>Бесплатный</span>
+                    <span>${canSpinFree ? '✅' : '❌'}</span>
+                `;
+            document.getElementById('extraBadge').innerHTML = `
+                    <span>✨</span>
+                    <span>Доп. прокрутов</span>
+                    <span>${extraSpins}</span>
+                `;
+
+            loadStats();
+            updateSpinButton();
+            drawWheel(currentRotation);
+        } catch (e) {}
+    }
+
+    function loadStats() {
+        try {
+            const saved = localStorage.getItem(`wheel_${userId}`);
+            if (saved) totalSpins = parseInt(saved) || 0;
+            document.getElementById('totalSpins').textContent = totalSpins;
+            document.getElementById('freeSpins').textContent = canSpin ? '1' : '0';
+            document.getElementById('extraSpins').textContent = extraSpins;
+        } catch (e) {}
+    }
+
+    function saveStats() {
+        try {
+            if (userId) localStorage.setItem(`wheel_${userId}`, totalSpins.toString());
+        } catch (e) {}
+    }
+
+    function updateSpinButton() {
+        const btn = document.getElementById('spinBtn');
+        if (canSpin) {
+            btn.innerHTML = '🎡 Крутить бесплатно';
+            spinType = 'free';
+            btn.disabled = false;
+        } else if (extraSpins > 0) {
+            btn.innerHTML = `✨ Крутить (осталось ${extraSpins})`;
+            spinType = 'extra';
+            btn.disabled = false;
+        } else {
+            btn.innerHTML = '❌ Нет прокрутов';
+            btn.disabled = true;
+        }
+    }
+
+    function getRandomPrize() {
+        const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+        let random = Math.random() * totalWeight;
+
+        let sum = 0;
+        for (let i = 0; i < prizes.length; i++) {
+            sum += prizes[i].weight;
+            if (random < sum) {
+                console.log(`✅ Selected: ${prizes[i].name} (index ${i}, weight ${prizes[i].weight})`);
+                return {
+                    index: i,
+                    prize: prizes[i],
+                    rotation: currentRotation + (Math.PI * 2 * 10) + (i * (Math.PI * 2 / prizes.length))
+                };
             }
-            return prizes[0];
         }
-        
-        function spinWheel() {
-            const prize = getRandomPrize();
-            
-            const data = {
-                type: 'free',
-                prize: {
-                    name: prize.name,
-                    value: prize.value
-                }
-            };
-            
-            console.log('📤 Отправляем:', data);
-            tg.sendData(JSON.stringify(data));
-            
-            document.getElementById('result').innerHTML = `
-                🎉 Выигрыш: ${prize.emoji} ${prize.display}!<br>
-                <small>Отправлено в бота</small>
+        return { index: 0, prize: prizes[0], rotation: currentRotation + Math.PI * 2 * 10 };
+    }
+
+    function spinWheel() {
+        if (isSpinning) return;
+
+        if (spinType === 'free' && !canSpin) {
+            console.log('❌ Бесплатный прокрут уже использован');
+            return;
+        }
+        if (spinType === 'extra' && extraSpins <= 0) {
+            console.log('❌ Нет дополнительных прокрутов');
+            return;
+        }
+
+        isSpinning = true;
+        document.getElementById('spinBtn').disabled = true;
+
+        const result = getRandomPrize();
+        const startRotation = currentRotation;
+        const targetRotation = result.rotation;
+        const startTime = performance.now();
+        const duration = 4000;
+
+        function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            const easeProgress = 1 - Math.pow(1 - progress, 4);
+            currentRotation = startRotation + (targetRotation - startRotation) * easeProgress;
+
+            drawWheel(currentRotation);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                console.log('🎯 ВЫИГРЫШ:', result.prize.name);
+
+                const data = {
+                    type: spinType,
+                    prize: {
+                        name: result.prize.name,
+                        value: result.prize.value
+                    }
+                };
+
+                // Отправляем через Telegram WebApp
+                tg.sendData(JSON.stringify(data));
+                console.log('📤 Data sent:', data);
+
+                totalSpins++;
+                document.getElementById('totalSpins').textContent = totalSpins;
+
+                document.getElementById('prizeInfo').innerHTML = `
+                <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
+                <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
             `;
+
+                if (spinType === 'free') {
+                    canSpin = false;
+                    document.getElementById('freeBadge').innerHTML = `
+                    <span>🆓</span>
+                    <span>Бесплатный</span>
+                    <span>❌</span>
+                `;
+                    document.getElementById('freeSpins').textContent = '0';
+                } else {
+                    extraSpins--;
+                    document.getElementById('extraBadge').innerHTML = `
+                    <span>✨</span>
+                    <span>Доп. прокрутов</span>
+                    <span>${extraSpins}</span>
+                `;
+                    document.getElementById('extraSpins').textContent = extraSpins;
+                }
+
+                saveStats();
+                updateSpinButton();
+                isSpinning = false;
+            }
         }
-    </script>
+
+        requestAnimationFrame(animate);
+    }
+
+    function getDescription(name) {
+        const desc = {
+            '1 ЧАС': '✅ +60 минут доступа',
+            '2 ЧАСА': '✅ +120 минут доступа',
+            '3 ЧАСА': '✅ +180 минут доступа',
+            '6 ЧАСОВ': '✅ +360 минут доступа',
+            '2 СЛОТА': '✅ +2 слота на 2 недели',
+            'ЛОТЕРЕЯ': '🎰 Билет в лотерею',
+            '+1': '✨ Дополнительный прокрут',
+            'ПРОМО': '🎟 Промокод на 50 грн',
+            '25 ГРН': '💰 25 грн на баланс',
+            '50 ГРН': '💰 50 грн на баланс'
+        };
+        return desc[name] || 'Приз получен!';
+    }
+
+    function closeApp() {
+        // Только для кнопки "◀️ Назад"
+        tg.close();
+    }
+
+    fillPrizesGrid();
+    getUrlParams();
+    drawWheel();
+
+    window.addEventListener('resize', () => drawWheel(currentRotation));
+</script>
 </body>
 </html>
