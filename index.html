@@ -980,7 +980,6 @@ function getRandomPrize() {
     const anglePerPrize = (Math.PI * 2) / prizes.length;
     const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
 
-    // Если random не создан — создаём
     if (forcedRandom === null) {
         forcedRandom = Math.random();
     }
@@ -992,10 +991,13 @@ function getRandomPrize() {
         sum += prizes[i].weight;
         if (randomValue < sum) {
 
+            const desiredPointerAngle = -Math.PI / 2; 
+            const sectorMiddle = (i * anglePerPrize) + anglePerPrize / 2;
+
             const targetRotation =
                 currentRotation +
                 Math.PI * 2 * 10 +
-              (Math.PI / 2 - (i * anglePerPrize) - anglePerPrize / 2)
+                (desiredPointerAngle - sectorMiddle);
 
             return {
                 index: i,
@@ -1005,14 +1007,12 @@ function getRandomPrize() {
         }
     }
 
-    // Fallback (редко, но пусть будет)
     return {
         index: 0,
         prize: prizes[0],
         rotation: currentRotation + Math.PI * 2 * 10
     };
 }
-
 
     function getDescription(name) {
         const desc = {
@@ -1039,6 +1039,7 @@ function getRandomPrize() {
 </script>
 </body>
 </html>
+
 
 
 
