@@ -968,55 +968,75 @@
         }, 1000);
     }
 
-    function spinWheel() {
-        if (isSpinning) return;
+function spinWheel() {
+    if (isSpinning) return;
 
-        if (spinType === 'free' && !canSpin) {
-            console.log('❌ Бесплатный прокрут уже использован');
-            return;
-        }
-        if (spinType === 'extra' && extraSpins <= 0) {
-            console.log('❌ Нет дополнительных прокрутов');
-            return;
-        }
+    if (spinType === 'free' && !canSpin) {
+        console.log('❌ Бесплатный прокрут уже использован');
+        return;
+    }
+    if (spinType === 'extra' && extraSpins <= 0) {
+        console.log('❌ Нет дополнительных прокрутов');
+        return;
+    }
 
-        // Очищаем предыдущий таймер если был
-        if (closeTimer) {
-            clearInterval(closeTimer);
-            closeTimer = null;
-        }
-        document.getElementById('timerContainer').style.display = 'none';
+    isSpinning = true;
+    document.getElementById('spinBtn').disabled = true;
 
-        isSpinning = true;
-        document.getElementById('spinBtn').disabled = true;
+    const result = getRandomPrize();
+    const startRotation = currentRotation;
+    const targetRotation = result.rotation;
+    const startTime = performance.now();
+    const duration = 4000;
 
-        const result = getRandomPrize();
-        const startRotation = currentRotation;
-        const targetRotation = result.rotation;
-        const startTime = performance.now();
-        const duration = 4000;
+    function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
 
-        function animate(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
+        const easeProgress = 1 - Math.pow(1 - progress, 4);
+        currentRotation = startRotation + (targetRotation - startRotation) * easeProgress;
 
-            const easeProgress = 1 - Math.pow(1 - progress, 4);
-            currentRotation = startRotation + (targetRotation - startRotation) * easeProgress;
+        drawWheel(currentRotation);
 
-            drawWheel(currentRotation);
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        } else {
+            console.log('🎯 ВЫИГРЫШ:', result.prize.name);
 
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            } else {
-                console.log('🎯 ВЫИГРЫШ:', result.prize.name);
+            // 1️⃣ СНАЧАЛА ПОКАЗЫВАЕМ РЕЗУЛЬТАТ
+            document.getElementById('prizeInfo').innerHTML = `
+                <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
+                <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
+            `;
 
-                // Показываем результат
-                document.getElementById('prizeInfo').innerHTML = `
-                    <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
-                    <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
+            // 2️⃣ ОБНОВЛЯЕМ СТАТИСТИКУ
+            totalSpins++;
+            document.getElementById('totalSpins').textContent = totalSpins;
+
+            if (spinType === 'free') {
+                canSpin = false;
+                document.getElementById('freeBadge').innerHTML = `
+                    <span>🆓</span>
+                    <span>Бесплатный</span>
+                    <span>❌</span>
                 `;
+                document.getElementById('freeSpins').textContent = '0';
+            } else {
+                extraSpins--;
+                document.getElementById('extraBadge').innerHTML = `
+                    <span>✨</span>
+                    <span>Доп. прокрутов</span>
+                    <span>${extraSpins}</span>
+                `;
+                document.getElementById('extraSpins').textContent = extraSpins;
+            }
 
-                // ОТПРАВЛЯЕМ ДАННЫЕ
+            saveStats();
+            updateSpinButton();
+
+            // 3️⃣ ЖДЕМ 10 СЕКУНД (Thread.sleep в JavaScript)
+            setTimeout(() => {
+                // 4️⃣ ОТПРАВЛЯЕМ ДАННЫЕ (и WebView закроется)
                 const data = {
                     type: spinType,
                     prize: {
@@ -1025,44 +1045,16 @@
                     }
                 };
 
-                const jsonData = JSON.stringify(data);
-                console.log('📤 Отправка данных в бота:', jsonData);
-                tg.sendData(jsonData);
-
-                // Обновляем статистику
-                totalSpins++;
-                document.getElementById('totalSpins').textContent = totalSpins;
-
-                if (spinType === 'free') {
-                    canSpin = false;
-                    document.getElementById('freeBadge').innerHTML = `
-                        <span>🆓</span>
-                        <span>Бесплатный</span>
-                        <span>❌</span>
-                    `;
-                    document.getElementById('freeSpins').textContent = '0';
-                } else {
-                    extraSpins--;
-                    document.getElementById('extraBadge').innerHTML = `
-                        <span>✨</span>
-                        <span>Доп. прокрутов</span>
-                        <span>${extraSpins}</span>
-                    `;
-                    document.getElementById('extraSpins').textContent = extraSpins;
-                }
-
-                saveStats();
-                updateSpinButton();
+                tg.sendData(JSON.stringify(data));
+                console.log('📤 Data sent after 10 seconds:', data);
+                
                 isSpinning = false;
-
-                // ЗАПУСКАЕМ ТАЙМЕР НА 20 СЕКУНД
-                startCloseTimer(20);
-            }
+            }, 10000); // 10000 миллисекунд = 10 секунд
         }
-
-        requestAnimationFrame(animate);
     }
 
+    requestAnimationFrame(animate);
+}
     function closeApp() {
         if (closeTimer) {
             clearInterval(closeTimer);
@@ -1079,3 +1071,4 @@
 </script>
 </body>
 </html>
+
