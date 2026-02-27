@@ -6,6 +6,7 @@
     <title>Spamlordy | Колесо фортуны</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Стили без изменений - оставь как есть */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
         * {
@@ -710,16 +711,16 @@
     let currentRotation = 0;
 
     const prizes = [
-        { name: '1 ЧАС', value: 60, color: '#FF6B6B', emoji: '⏱️' },
-        { name: '2 ЧАСА', value: 120, color: '#4ECDC4', emoji: '⏱️' },
-        { name: '3 ЧАСА', value: 180, color: '#45B7D1', emoji: '⏱️' },
-        { name: '6 ЧАСОВ', value: 360, color: '#96CEB4', emoji: '⏱️' },
-        { name: '2 СЛОТА', value: 2, color: '#FFE194', emoji: '🧩' },
-        { name: 'ЛОТЕРЕЯ', value: 1, color: '#D4A5A5', emoji: '🎰' },
-        { name: '+1', value: 1, color: '#9B59B6', emoji: '✨', full: '+1 ПРОКРУТ' },
-        { name: 'ПРОМО', value: 50, color: '#F1C40F', emoji: '🎟️', full: 'ПРОМОКОД' },
-        { name: '25 ГРН', value: 25, color: '#E67E22', emoji: '💰' },
-        { name: '50 ГРН', value: 50, color: '#2ECC71', emoji: '💰' }
+        { name: '1 ЧАС', value: 60, color: '#FF6B6B', emoji: '⏱️', displayName: '1 час доступа' },
+        { name: '2 ЧАСА', value: 120, color: '#4ECDC4', emoji: '⏱️', displayName: '2 часа доступа' },
+        { name: '3 ЧАСА', value: 180, color: '#45B7D1', emoji: '⏱️', displayName: '3 часа доступа' },
+        { name: '6 ЧАСОВ', value: 360, color: '#96CEB4', emoji: '⏱️', displayName: '6 часов доступа' },
+        { name: '2 СЛОТА', value: 2, color: '#FFE194', emoji: '🧩', displayName: '2 слота на 2 недели' },
+        { name: 'ЛОТЕРЕЯ', value: 1, color: '#D4A5A5', emoji: '🎰', displayName: 'Билет в лотерею' },
+        { name: '+1', value: 1, color: '#9B59B6', emoji: '✨', displayName: 'Дополнительный прокрут' },
+        { name: 'ПРОМО', value: 50, color: '#F1C40F', emoji: '🎟️', displayName: 'Промокод на 50 грн' },
+        { name: '25 ГРН', value: 25, color: '#E67E22', emoji: '💰', displayName: '25 грн на баланс' },
+        { name: '50 ГРН', value: 50, color: '#2ECC71', emoji: '💰', displayName: '50 грн на баланс' }
     ];
 
     const canvas = document.getElementById('wheelCanvas');
@@ -775,7 +776,7 @@
             ctx.strokeStyle = 'rgba(0,0,0,0.8)';
             ctx.lineWidth = 3;
 
-            let displayText = prizes[i].name;
+            let displayText = prizes[i].displayName;
             ctx.strokeText(prizes[i].emoji + ' ' + displayText, 90, 0);
 
             ctx.fillStyle = '#FFFFFF';
@@ -829,10 +830,9 @@
             const card = document.createElement('div');
             card.className = 'prize-card';
             card.style.animationDelay = `${index * 0.05}s`;
-            let displayName = prize.full || prize.name;
             card.innerHTML = `
                     <div class="prize-color" style="background: ${prize.color};"></div>
-                    <span>${prize.emoji} ${displayName}</span>
+                    <span>${prize.emoji} ${prize.displayName}</span>
                 `;
             grid.appendChild(card);
         });
@@ -952,13 +952,11 @@
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
-                let prizeName = result.prize.full || result.prize.name;
-
-                // ВАЖНО: отправляем данные в правильном формате
+                // ВАЖНО: отправляем данные с name из массива (короткое имя для бота)
                 const data = {
                     type: spinType,
                     prize: {
-                        name: result.prize.name,
+                        name: result.prize.name,  // Отправляем короткое имя
                         value: result.prize.value
                     }
                 };
@@ -967,14 +965,16 @@
                 tg.sendData(JSON.stringify(data));
 
                 console.log('Data sent to bot:', data);
-                tg.showAlert('✅ Данные отправлены! Приз будет начислен...');
+                
+                // Показываем красивое название пользователю
+                let displayPrizeName = result.prize.displayName;
 
                 totalSpins++;
                 document.getElementById('totalSpins').textContent = totalSpins;
 
                 document.getElementById('prizeInfo').innerHTML = `
-                <div class="prize-info-main">🎉 ${result.prize.emoji} ${prizeName}!</div>
-                <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
+                <div class="prize-info-main">🎉 ${result.prize.emoji} ${displayPrizeName}!</div>
+                <div class="prize-info-sub">${getDescription(result.prize.name, result.prize.value)}</div>
             `;
 
                 if (spinType === 'free') {
@@ -998,13 +998,15 @@
                 saveStats();
                 updateSpinButton();
                 isSpinning = false;
+                
+                tg.showAlert(`✅ Вы выиграли: ${displayPrizeName}!`);
             }
         }
 
         requestAnimationFrame(animate);
     }
 
-    function getDescription(name) {
+    function getDescription(name, value) {
         const desc = {
             '1 ЧАС': '✅ +60 минут доступа',
             '2 ЧАСА': '✅ +120 минут доступа',
