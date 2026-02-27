@@ -700,7 +700,7 @@
     console.log('Telegram WebApp version:', tg.version);
     console.log('Platform:', tg.platform);
 
-    // 👇 ЗАПРЕЩАЕМ АВТОМАТИЧЕСКОЕ ЗАКРЫТИЕ
+    // 👇 КРИТИЧЕСКИ ВАЖНО: ЗАПРЕЩАЕМ АВТОЗАКРЫТИЕ
     tg.disableClosingConfirmation();
 
     let userId = null;
@@ -711,17 +711,18 @@
     let totalSpins = 0;
     let currentRotation = 0;
 
+    // 👇 ВАЖНО: ИНДЕКСЫ ДОЛЖНЫ СОВПАДАТЬ С ВЕСАМИ!
     const prizes = [
-        { name: '1 ЧАС', value: 60, color: '#FF6B6B', emoji: '⏱️', displayName: '1 час' },
-        { name: '2 ЧАСА', value: 120, color: '#4ECDC4', emoji: '⏱️', displayName: '2 часа' },
-        { name: '3 ЧАСА', value: 180, color: '#45B7D1', emoji: '⏱️', displayName: '3 часа' },
-        { name: '6 ЧАСОВ', value: 360, color: '#96CEB4', emoji: '⏱️', displayName: '6 часов' },
-        { name: '2 СЛОТА', value: 2, color: '#FFE194', emoji: '🧩', displayName: '2 слота' },
-        { name: 'ЛОТЕРЕЯ', value: 1, color: '#D4A5A5', emoji: '🎰', displayName: 'Лотерея' },
-        { name: '+1', value: 1, color: '#9B59B6', emoji: '✨', displayName: '+1 прокрут' },
-        { name: 'ПРОМО', value: 50, color: '#F1C40F', emoji: '🎟️', displayName: 'Промокод' },
-        { name: '25 ГРН', value: 25, color: '#E67E22', emoji: '💰', displayName: '25 грн' },
-        { name: '50 ГРН', value: 50, color: '#2ECC71', emoji: '💰', displayName: '50 грн' }
+        { name: '1 ЧАС', value: 60, color: '#FF6B6B', emoji: '⏱️', displayName: '1 час', weight: 30 },
+        { name: '2 ЧАСА', value: 120, color: '#4ECDC4', emoji: '⏱️', displayName: '2 часа', weight: 20 },
+        { name: '3 ЧАСА', value: 180, color: '#45B7D1', emoji: '⏱️', displayName: '3 часа', weight: 15 },
+        { name: '6 ЧАСОВ', value: 360, color: '#96CEB4', emoji: '⏱️', displayName: '6 часов', weight: 5 },
+        { name: '2 СЛОТА', value: 2, color: '#FFE194', emoji: '🧩', displayName: '2 слота', weight: 2 },
+        { name: 'ЛОТЕРЕЯ', value: 1, color: '#D4A5A5', emoji: '🎰', displayName: 'Лотерея', weight: 4 },
+        { name: '+1', value: 1, color: '#9B59B6', emoji: '✨', displayName: '+1 прокрут', weight: 8 },
+        { name: 'ПРОМО', value: 50, color: '#F1C40F', emoji: '🎟️', displayName: 'Промокод', weight: 1 },
+        { name: '25 ГРН', value: 25, color: '#E67E22', emoji: '💰', displayName: '25 грн', weight: 12 },
+        { name: '50 ГРН', value: 50, color: '#2ECC71', emoji: '💰', displayName: '50 грн', weight: 3 }
     ];
 
     const canvas = document.getElementById('wheelCanvas');
@@ -772,17 +773,17 @@
             ctx.shadowOffsetX = 2;
             ctx.shadowOffsetY = 2;
 
-            ctx.font = 'bold 11px Montserrat, sans-serif';
+            ctx.font = 'bold 10px Montserrat, sans-serif';
 
             ctx.strokeStyle = 'rgba(0,0,0,0.8)';
             ctx.lineWidth = 3;
 
             let displayText = prizes[i].displayName;
-            ctx.strokeText(prizes[i].emoji + ' ' + displayText, 85, 0);
+            ctx.strokeText(prizes[i].emoji + ' ' + displayText, 80, 0);
 
             ctx.fillStyle = '#FFFFFF';
             ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-            ctx.fillText(prizes[i].emoji + ' ' + displayText, 85, 0);
+            ctx.fillText(prizes[i].emoji + ' ' + displayText, 80, 0);
 
             ctx.restore();
         }
@@ -902,15 +903,15 @@
     }
 
     function getRandomPrize() {
-        const weights = [30, 20, 15, 5, 2, 4, 8, 1, 12, 3];
-        const totalWeight = weights.reduce((a, b) => a + b, 0);
+        // Используем веса из массива prizes
+        const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
         let random = Math.random() * totalWeight;
 
         let sum = 0;
-        for (let i = 0; i < weights.length; i++) {
-            sum += weights[i];
+        for (let i = 0; i < prizes.length; i++) {
+            sum += prizes[i].weight;
             if (random < sum) {
-                console.log(`Selected prize index ${i}: ${prizes[i].name} with weight ${weights[i]}`);
+                console.log(`Selected: ${prizes[i].name} (index ${i}, weight ${prizes[i].weight})`);
                 return {
                     index: i,
                     prize: prizes[i],
@@ -918,7 +919,6 @@
                 };
             }
         }
-        console.log('Fallback to index 0');
         return { index: 0, prize: prizes[0], rotation: currentRotation + Math.PI * 2 * 10 };
     }
 
@@ -955,7 +955,9 @@
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
-                // ВАЖНО: отправляем данные с name из массива (короткое имя для бота)
+                // 👇 КРИТИЧЕСКИ ВАЖНО: проверяем что за приз выпал
+                console.log('🎯 ВЫИГРЫШ:', result.prize);
+
                 const data = {
                     type: spinType,
                     prize: {
@@ -964,19 +966,15 @@
                     }
                 };
 
-                // Отправляем через Telegram WebApp (безопасно!)
+                // Отправляем через Telegram WebApp
                 tg.sendData(JSON.stringify(data));
-
-                console.log('Data sent to bot:', data);
-
-                // Показываем красивое название пользователю
-                let displayPrizeName = result.prize.displayName;
+                console.log('📤 Data sent:', data);
 
                 totalSpins++;
                 document.getElementById('totalSpins').textContent = totalSpins;
 
                 document.getElementById('prizeInfo').innerHTML = `
-                <div class="prize-info-main">🎉 ${result.prize.emoji} ${displayPrizeName}!</div>
+                <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
                 <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
             `;
 
@@ -1024,7 +1022,7 @@
     }
 
     function closeApp() {
-        // 👇 ОСТАВИЛ ТОЛЬКО ДЛЯ КНОПКИ "◀️ Назад"
+        // Только для кнопки "◀️ Назад"
         tg.close();
     }
 
