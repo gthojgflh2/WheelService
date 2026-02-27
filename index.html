@@ -1,448 +1,1021 @@
-package com.example.bot;
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spamlordy | Колесо фортуны</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* ТВОИ СТИЛИ (без изменений) */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
-import com.example.app.Env;
-import com.example.db.UserDao;
-import com.example.db.UserDao.WheelPrize;
-import com.example.db.PromoDao;
-import com.example.db.LotteryPrize;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-import org.telegram.telegrambots.meta.api.objects.webapp.WebAppInfo;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: radial-gradient(circle at 30% 30%, #1a1b4b, #0a0b1a);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 12px;
+            position: relative;
+            overflow-x: hidden;
+        }
 
-public class WheelService {
-    private static final Logger log = LoggerFactory.getLogger(WheelService.class);
-    private final SelfNotesBot bot;
-    private static final String MINI_APP_URL = "https://wheelservice.onrender.com";
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.2)"/><circle cx="50" cy="30" r="1.5" fill="rgba(100,108,255,0.3)"/><circle cx="80" cy="70" r="1" fill="rgba(255,255,255,0.2)"/><circle cx="30" cy="80" r="2" fill="rgba(157,80,187,0.3)"/></svg>');
+            background-repeat: repeat;
+            opacity: 0.5;
+            animation: particles 60s linear infinite;
+            z-index: 0;
+        }
 
-    // Веса для призов (чем больше число, тем выше вероятность)
-    private static final Map<WheelPrize, Integer> PRIZE_WEIGHTS = new LinkedHashMap<>() {{
-        put(WheelPrize.ACCESS_1H, 30);      // 30%
-        put(WheelPrize.ACCESS_2H, 20);      // 20%
-        put(WheelPrize.ACCESS_3H, 15);      // 15%
-        put(WheelPrize.BALANCE_25, 12);      // 12%
-        put(WheelPrize.EXTRA_SPIN, 8);       // 8%
-        put(WheelPrize.ACCESS_6H, 5);        // 5%
-        put(WheelPrize.LOTTERY_FREE, 4);     // 4%
-        put(WheelPrize.BALANCE_50, 3);       // 3%
-        put(WheelPrize.SLOTS_2_2W, 2);       // 2%
-        put(WheelPrize.PROMOCODE, 1);        // 1%
-    }};
+        @keyframes particles {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100px); }
+        }
 
-    public WheelService(SelfNotesBot bot) {
-        this.bot = bot;
-    }
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 24px 20px;
+            text-align: center;
+            background: rgba(18, 20, 35, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+            0 0 40px rgba(100, 108, 255, 0.2);
+            position: relative;
+            z-index: 1;
+            animation: containerAppear 0.5s ease-out;
+        }
 
-    public void sendWheelMenu(long chatId) {
-        // Каждый раз получаем СВЕЖИЕ данные из базы
-        boolean canSpin = UserDao.canSpinWheel(chatId);
-        int extraSpins = UserDao.getExtraSpins(chatId);
-        String stats = UserDao.getWheelStats(chatId);
+        @keyframes containerAppear {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
 
-        // Добавляем timestamp и random для уникальности URL
-        long timestamp = System.currentTimeMillis();
-        int random = new Random().nextInt(1000000);
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            animation: slideDown 0.5s ease-out;
+        }
 
-        String text = String.format("""
-🎡 <b>КОЛЕСО ФОРТУНЫ</b>
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-Нажмите кнопку ниже, чтобы открыть красивое колесо с анимацией!
+        .logo-icon {
+            font-size: 42px;
+            filter: drop-shadow(0 0 20px #646CFF);
+            animation: float 3s ease infinite;
+        }
 
-<b>📊 Твоя статистика:</b>
-%s
+        .logo-text {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #646CFF, #9D50BB, #646CFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+            letter-spacing: 1.5px;
+        }
 
-<b>✨ Доступно прокрутов:</b>
-• 🆓 Бесплатный (раз в неделю): %s
-• ⭐ Дополнительные: <b>%d</b>
+        .logo-badge {
+            background: linear-gradient(135deg, #646CFF, #9D50BB);
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 4px 20px rgba(100, 108, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            animation: pulse 2s ease infinite;
+        }
 
-⬇️ <b>Нажмите кнопку, чтобы крутить!</b>
-""",
-                stats,
-                canSpin ? "✅ Доступен" : "❌ Использован",
-                extraSpins
-        );
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
 
-        // Добавляем timestamp и random для предотвращения кеширования
-        String url = MINI_APP_URL + "?user=" + chatId +
-                "&canSpin=" + canSpin +
-                "&extraSpins=" + extraSpins +
-                "&t=" + timestamp +
-                "&r=" + random;
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-        // Создаем кнопку для колеса
-        KeyboardButton wheelButton = new KeyboardButton();
-        wheelButton.setText("🎡 ОТКРЫТЬ КОЛЕСО ФОРТУНЫ");
-        wheelButton.setWebApp(new WebAppInfo(url));
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
 
-        // Создаем кнопку отмены
-        KeyboardButton cancelButton = new KeyboardButton();
-        cancelButton.setText("❌ Отмена");
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff, #c0c4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(100, 108, 255, 0.5);
+            letter-spacing: 1px;
+            animation: fadeIn 0.6s ease-out;
+        }
 
-        // Первый ряд - только кнопка колеса
-        KeyboardRow row1 = new KeyboardRow();
-        row1.add(wheelButton);
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
 
-        // Второй ряд - кнопка отмены
-        KeyboardRow row2 = new KeyboardRow();
-        row2.add(cancelButton);
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        // Создаем клавиатуру с двумя рядами
-        List<KeyboardRow> keyboard = new ArrayList<>();
-        keyboard.add(row1);
-        keyboard.add(row2);
+        .stat-card {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 30px;
+            padding: 18px 5px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
 
-        ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
-        markup.setKeyboard(keyboard);
-        markup.setResizeKeyboard(true);
-        markup.setOneTimeKeyboard(false);
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(100,108,255,0.2), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
 
-        try {
-            bot.execute(SendMessage.builder()
-                    .chatId(String.valueOf(chatId))
-                    .text(text)
-                    .parseMode("HTML")
-                    .replyMarkup(markup)
-                    .build());
-        } catch (Exception e) {
-            log.error("Ошибка отправки меню колеса: {}", e.getMessage());
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(100, 108, 255, 0.3);
+            box-shadow: 0 15px 30px rgba(100, 108, 255, 0.2);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+            animation: rotate 4s linear infinite;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #646CFF, #9D50BB);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wheel-wrapper {
+            position: relative;
+            width: fit-content;
+            margin: 20px auto 30px;
+            padding: 10px;
+            animation: scaleIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .pointer-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: -10px;
+            z-index: 10;
+        }
+
+        .pointer {
+            width: 0;
+            height: 0;
+            border-left: 22px solid transparent;
+            border-right: 22px solid transparent;
+            border-top: 44px solid #ff4d4d;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+            position: relative;
+            animation: pointerWobble 2s ease infinite;
+            transform-origin: top center;
+        }
+
+        @keyframes pointerWobble {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-3deg); }
+            75% { transform: rotate(3deg); }
+        }
+
+        .pointer::after {
+            content: '';
+            position: absolute;
+            top: -40px;
+            left: -8px;
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle, #646CFF, #9D50BB);
+            border-radius: 50%;
+            box-shadow: 0 0 25px #646CFF;
+            animation: pulseGlow 1.5s ease infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px #646CFF; }
+            50% { box-shadow: 0 0 35px #9D50BB; }
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            width: fit-content;
+            margin: 0 auto;
+        }
+
+        canvas {
+            display: block;
+            width: 290px;
+            height: 290px;
+            border-radius: 50%;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8),
+            0 0 0 3px rgba(255,255,255,0.1),
+            0 0 0 6px rgba(100,108,255,0.2);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            image-rendering: high-quality;
+            cursor: pointer;
+            margin: 0 auto;
+        }
+
+        canvas:hover {
+            transform: scale(1.02);
+            box-shadow: 0 30px 60px rgba(100,108,255,0.3),
+            0 0 0 3px rgba(255,255,255,0.2),
+            0 0 0 8px rgba(100,108,255,0.3);
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #646CFF, #9D50BB, #646CFF);
+            background-size: 200% 200%;
+            color: white;
+            border: none;
+            padding: 20px 30px;
+            border-radius: 60px;
+            font-size: 20px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px rgba(100, 108, 255, 0.4),
+            0 0 0 2px rgba(255, 255, 255, 0.2);
+            width: 100%;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            animation: gradient 3s ease infinite, bounce 2s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3), transparent 70%);
+            animation: rotate 4s linear infinite;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(100, 108, 255, 0.6),
+            0 0 0 3px rgba(255, 255, 255, 0.3);
+        }
+
+        .action-btn:active {
+            transform: translateY(2px) scale(0.98);
+            box-shadow: 0 10px 20px rgba(100, 108, 255, 0.4);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.3;
+            background: linear-gradient(135deg, #444, #666);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+            animation: none;
+            pointer-events: none;
+        }
+
+        .disabled-btn {
+            opacity: 0.3;
+            background: linear-gradient(135deg, #444, #666) !important;
+            box-shadow: none !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+            animation: none !important;
+            pointer-events: none !important;
+        }
+
+        .dropdown-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(100, 108, 255, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 16px;
+            width: 100%;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dropdown-btn:hover {
+            background: rgba(100, 108, 255, 0.1);
+            border-color: #646CFF;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(100, 108, 255, 0.3);
+        }
+
+        .prizes-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .prizes-grid.visible {
+            max-height: 600px;
+            margin-top: 15px;
+        }
+
+        .prize-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(100, 108, 255, 0.2);
+            border-radius: 30px;
+            padding: 12px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            animation: cardAppear 0.5s ease-out;
+            cursor: pointer;
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .prize-card:hover {
+            transform: translateX(5px) scale(1.02);
+            border-color: #646CFF;
+            background: rgba(100, 108, 255, 0.1);
+            box-shadow: 0 5px 20px rgba(100, 108, 255, 0.3);
+        }
+
+        .prize-color {
+            width: 28px;
+            height: 28px;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+
+        .prize-card:hover .prize-color {
+            transform: rotate(360deg);
+            border-color: white;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            border-radius: 50px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .back-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(100,108,255,0.2), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(100, 108, 255, 0.1);
+            border-color: #646CFF;
+            transform: translateY(-3px);
+            color: white;
+            box-shadow: 0 10px 25px rgba(100, 108, 255, 0.3);
+        }
+
+        .back-btn:hover::before {
+            opacity: 1;
+            animation: rotate 3s linear infinite;
+        }
+
+        .blocked-container {
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .blocked-title {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+
+        .blocked-text {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .blocked-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: shake 0.5s ease infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .how-to-get {
+            background: rgba(100, 108, 255, 0.1);
+            border-radius: 30px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+            border: 1px solid rgba(100, 108, 255, 0.3);
+        }
+
+        .how-to-get h3 {
+            color: #646CFF;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .how-to-get ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .how-to-get li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .how-to-get li:before {
+            content: "🎁";
+            position: absolute;
+            left: 0;
+        }
+
+        @media (max-width: 380px) {
+            .container {
+                padding: 20px 15px;
+            }
+            canvas {
+                width: 250px;
+                height: 250px;
+            }
+            .logo-text {
+                font-size: 28px;
+            }
+            .logo-badge {
+                font-size: 11px;
+                padding: 4px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="mainContainer">
+    <!-- Контент будет динамически заменяться -->
+</div>
+
+<script>
+    let tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    let userId = null;
+    let spinType = 'free';
+    let canSpin = true;
+    let extraSpins = 0;
+    let isSpinning = false;
+    let totalSpins = 0;
+    let currentRotation = 0;
+    let hasSpun = false;
+    let dataSent = false;
+
+    const prizes = [
+        { name: '1 ЧАС', value: 60, color: '#FF6B6B', emoji: '⏱️', displayName: '1 час', weight: 30 },
+        { name: '2 ЧАСА', value: 120, color: '#4ECDC4', emoji: '⏱️', displayName: '2 часа', weight: 20 },
+        { name: '3 ЧАСА', value: 180, color: '#45B7D1', emoji: '⏱️', displayName: '3 часа', weight: 15 },
+        { name: '6 ЧАСОВ', value: 360, color: '#96CEB4', emoji: '⏱️', displayName: '6 часов', weight: 5 },
+        { name: '2 СЛОТА', value: 2, color: '#FFE194', emoji: '🧩', displayName: '2 слота', weight: 2 },
+        { name: 'ЛОТЕРЕЯ', value: 1, color: '#D4A5A5', emoji: '🎰', displayName: 'Лотерея', weight: 4 },
+        { name: '+1', value: 1, color: '#9B59B6', emoji: '✨', displayName: '+1 прокрут', weight: 8 },
+        { name: 'ПРОМО', value: 50, color: '#F1C40F', emoji: '🎟️', displayName: 'Промокод', weight: 1 },
+        { name: '25 ГРН', value: 25, color: '#E67E22', emoji: '💰', displayName: '25 грн', weight: 12 },
+        { name: '50 ГРН', value: 50, color: '#2ECC71', emoji: '💰', displayName: '50 грн', weight: 3 }
+    ];
+
+    const canvas = document.createElement('canvas');
+    canvas.id = 'wheelCanvas';
+    canvas.width = 300;
+    canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    function getUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        userId = params.get('user');
+        canSpin = params.get('canSpin') === 'true';
+        extraSpins = parseInt(params.get('extraSpins') || '0');
+        
+        console.log('📊 ЗАГРУЗКА КОЛЕСА');
+        console.log('User ID:', userId);
+        console.log('Can spin:', canSpin);
+        console.log('Extra spins:', extraSpins);
+        
+        // Проверяем, есть ли прокруты
+        if (!canSpin && extraSpins <= 0) {
+            showNoSpinsScreen();
+        } else {
+            showWheelScreen();
         }
     }
 
-    public void handleWebAppData(long chatId, String data) {
-        log.info("========== WHEEL WEBAPP DATA ==========");
-        log.info("User ID: {}", chatId);
-        log.info("Raw data: {}", data);
-
-        try {
-            // ПОЛУЧАЕМ АКТУАЛЬНОЕ СОСТОЯНИЕ ИЗ БД
-            boolean canSpinNow = UserDao.canSpinWheel(chatId);
-            int extraSpinsNow = UserDao.getExtraSpins(chatId);
-
-            log.info("📊 Current DB state - canSpin: {}, extraSpins: {}", canSpinNow, extraSpinsNow);
-
-            com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(data).getAsJsonObject();
-
-            if (!json.has("type") || !json.has("prize")) {
-                log.error("❌ Missing required fields in JSON");
-                bot.sendHtml(chatId, "❌ Ошибка: неверный формат данных");
-                return;
-            }
-
-            String spinType = json.get("type").getAsString();
-            com.google.gson.JsonObject prizeObj = json.get("prize").getAsJsonObject();
-
-            String prizeName = prizeObj.get("name").getAsString();
-            int prizeValue = prizeObj.get("value").getAsInt();
-
-            log.info("🎯 Spin type: {}, Prize: {} ({})", spinType, prizeName, prizeValue);
-            
-            // Логируем ASCII коды для диагностики
-            log.info("🔍 Prize name char codes:");
-            for (int i = 0; i < prizeName.length(); i++) {
-                log.info("  char[{}]: '{}' = {}", i, prizeName.charAt(i), (int) prizeName.charAt(i));
-            }
-
-            // Проверяем наличие прокрутов
-            if ("free".equals(spinType)) {
-                if (!canSpinNow) {
-                    log.error("🚨 FRAUD DETECTED: User {} tried to use free spin but has none in DB", chatId);
-                    bot.sendHtml(chatId, "❌ Ошибка: бесплатный прокрут недоступен!\n\nПолучите новые прокруты в боте.");
-
-                    // Уведомляем админов о попытке мошенничества
-                    notifyAdminsAboutFraud(chatId, "FREE_SPIN_FRAUD");
-                    return;
-                }
-            } else if ("extra".equals(spinType)) {
-                if (extraSpinsNow <= 0) {
-                    log.error("🚨 FRAUD DETECTED: User {} tried to use extra spin but has none in DB", chatId);
-                    bot.sendHtml(chatId, "❌ Ошибка: нет дополнительных прокрутов!\n\nПолучите новые прокруты в боте.");
-
-                    // Уведомляем админов о попытке мошенничества
-                    notifyAdminsAboutFraud(chatId, "EXTRA_SPIN_FRAUD");
-                    return;
-                }
-            } else {
-                log.warn("Unknown spin type: {}", spinType);
-                bot.sendHtml(chatId, "❌ Ошибка: неизвестный тип прокрута");
-                return;
-            }
-
-            // Маппим приз
-            WheelPrize prize = mapPrize(prizeName, prizeValue);
-            log.info("🎁 Mapped prize: {}", prize != null ? prize.name() : "null");
-
-            if (prize == null) {
-                log.error("Failed to map prize: '{}' with value {}", prizeName, prizeValue);
-                bot.sendHtml(chatId, "❌ Ошибка: неизвестный приз '" + prizeName + "'");
-                return;
-            }
-
-            // Сохраняем использование прокрута
-            if ("free".equals(spinType)) {
-                UserDao.saveWheelSpin(chatId, prize);
-            } else {
-                UserDao.useExtraSpin(chatId);
-            }
-
-            // Выдаем приз
-            String prizeMessage = givePrize(chatId, prize);
-
-            // Отправляем результат пользователю
-            String resultText = String.format("""
-🎉 <b>ПОЗДРАВЛЯЕМ!</b>
-
-🎡 Колесо остановилось на...
-
-<b>╔══════════════════╗</b>
-<b>║   %s   ║</b>
-<b>╚══════════════════╝</b>
-
-%s
-
-✨ Приз уже ваш! Используйте с умом.
-""", prize.description, prizeMessage);
-
-            List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-            buttons.add(List.of(
-                    InlineKeyboardButton.builder()
-                            .text("🎡 КРУТИТЬ ЕЩЁ")
-                            .callbackData("WHEEL_MENU")
-                            .build(),
-                    InlineKeyboardButton.builder()
-                            .text("◀️ В ПРОФИЛЬ")
-                            .callbackData("BACK_TO_PROFILE")
-                            .build()
-            ));
-
-            InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
-            keyboard.setKeyboard(buttons);
-
-            bot.sendHtml(chatId, resultText, keyboard);
-
-            log.info("✅ Successfully processed wheel spin for user {}. Prize: {}", chatId, prize.name());
-
-        } catch (Exception e) {
-            log.error("❌ CRITICAL ERROR handling web app data: {}", e.getMessage(), e);
-            bot.sendHtml(chatId, "❌ Ошибка при обработке результата: " + e.getMessage());
-        }
-    }
-
-    // Уведомление админов о попытке мошенничества
-    private void notifyAdminsAboutFraud(long chatId, String fraudType) {
-        String message = String.format("""
-🚨 <b>ОБНАРУЖЕНА ПОПЫТКА МОШЕННИЧЕСТВА!</b>
-
-👤 Пользователь: <code>%d</code>
-🔍 Тип: <b>%s</b>
-⏰ Время: <b>%s</b>
-
-⚠️ Пользователь пытался крутить колесо без прокрутов!
-""", chatId, fraudType, new Date().toString());
-
-        for (Long adminId : Env.ADMIN_IDS) {
-            bot.sendHtml(adminId, message);
-        }
-    }
-
-    private WheelPrize mapPrize(String prizeName, int value) {
-        log.info(">>> mapPrize ENTER: name='{}', value={}", prizeName, value);
-
-        if (prizeName == null) {
-            log.error(">>> mapPrize: prizeName is null");
-            return null;
-        }
-
-        // Сохраняем оригинал для логов
-        String originalName = prizeName;
-
-        // Убираем лишние пробелы
-        prizeName = prizeName.trim();
-        log.info(">>> mapPrize trimmed: '{}'", prizeName);
-
-        // Прямое сравнение с названиями из HTML
-        switch (prizeName) {
-            case "1 ЧАС":
-                log.info(">>> mapPrize matched: ACCESS_1H (direct match)");
-                return WheelPrize.ACCESS_1H;
-            case "2 ЧАСА":
-                log.info(">>> mapPrize matched: ACCESS_2H (direct match)");
-                return WheelPrize.ACCESS_2H;
-            case "3 ЧАСА":
-                log.info(">>> mapPrize matched: ACCESS_3H (direct match)");
-                return WheelPrize.ACCESS_3H;
-            case "6 ЧАСОВ":
-                log.info(">>> mapPrize matched: ACCESS_6H (direct match)");
-                return WheelPrize.ACCESS_6H;
-            case "2 СЛОТА":
-                log.info(">>> mapPrize matched: SLOTS_2_2W (direct match)");
-                return WheelPrize.SLOTS_2_2W;
-            case "ЛОТЕРЕЯ":
-                log.info(">>> mapPrize matched: LOTTERY_FREE (direct match)");
-                return WheelPrize.LOTTERY_FREE;
-            case "+1":
-                log.info(">>> mapPrize matched: EXTRA_SPIN (direct match)");
-                return WheelPrize.EXTRA_SPIN;
-            case "ПРОМО":
-                log.info(">>> mapPrize matched: PROMOCODE (direct match)");
-                return WheelPrize.PROMOCODE;
-            case "25 ГРН":
-                log.info(">>> mapPrize matched: BALANCE_25 (direct match)");
-                return WheelPrize.BALANCE_25;
-            case "50 ГРН":
-                log.info(">>> mapPrize matched: BALANCE_50 (direct match)");
-                return WheelPrize.BALANCE_50;
-            default:
-                log.warn(">>> mapPrize: NO DIRECT MATCH for '{}', trying by value={}", prizeName, value);
+    function showNoSpinsScreen() {
+        const container = document.getElementById('mainContainer');
+        container.innerHTML = `
+            <div class="blocked-container">
+                <div class="logo">
+                    <span class="logo-icon">⚡</span>
+                    <span class="logo-text">SPAMLORDY</span>
+                    <span class="logo-badge">FORTUNE</span>
+                </div>
                 
-                // Если не нашли по имени, пробуем по значению
-                switch (value) {
-                    case 60:
-                        log.info(">>> mapPrize: matched by value 60 -> ACCESS_1H");
-                        return WheelPrize.ACCESS_1H;
-                    case 120:
-                        log.info(">>> mapPrize: matched by value 120 -> ACCESS_2H");
-                        return WheelPrize.ACCESS_2H;
-                    case 180:
-                        log.info(">>> mapPrize: matched by value 180 -> ACCESS_3H");
-                        return WheelPrize.ACCESS_3H;
-                    case 360:
-                        log.info(">>> mapPrize: matched by value 360 -> ACCESS_6H");
-                        return WheelPrize.ACCESS_6H;
-                    case 2:
-                        log.info(">>> mapPrize: matched by value 2 -> SLOTS_2_2W");
-                        return WheelPrize.SLOTS_2_2W;
-                    case 1:
-                        // Для value=1 нужно определить по контексту
-                        if (originalName.contains("ЛОТЕРЕЯ") || originalName.contains("лотерея")) {
-                            log.info(">>> mapPrize: value=1 and name contains lottery -> LOTTERY_FREE");
-                            return WheelPrize.LOTTERY_FREE;
-                        } else {
-                            log.info(">>> mapPrize: value=1 and name not lottery -> EXTRA_SPIN");
-                            return WheelPrize.EXTRA_SPIN;
-                        }
-                    case 25:
-                        log.info(">>> mapPrize: matched by value 25 -> BALANCE_25");
-                        return WheelPrize.BALANCE_25;
-                    case 50:
-                        log.info(">>> mapPrize: matched by value 50 -> BALANCE_50");
-                        return WheelPrize.BALANCE_50;
-                    default:
-                        log.error(">>> mapPrize: NO MATCH for name='{}', value={}", prizeName, value);
-                        return null;
-                }
-        }
+                <div class="blocked-icon">🚫</div>
+                <div class="blocked-title">НЕТ ПРОКРУТОВ!</div>
+                <div class="blocked-text">У вас закончились прокруты колеса фортуны</div>
+                
+                <div class="how-to-get">
+                    <h3>🎯 КАК ПОЛУЧИТЬ ПРОКРУТЫ:</h3>
+                    <ul>
+                        <li><b>🤝 Приглашай друзей</b> — 4, 10, 20 приглашённых</li>
+                        <li><b>📱 Выполняй миссии</b> — TikTok, отзывы</li>
+                        <li><b>💰 Покупай подписку</b> — от 150 грн</li>
+                        <li><b>🎰 Участвуй в конкурсах</b> — в канале</li>
+                    </ul>
+                </div>
+                
+                <button class="back-btn" onclick="closeApp()">
+                    ◀️ ЗАКРЫТЬ
+                </button>
+            </div>
+        `;
     }
 
-    private String givePrize(long chatId, WheelPrize prize) {
-        log.info("Giving prize to user {}: {} ({})", chatId, prize.name(), prize.description);
+    function showWheelScreen() {
+        const container = document.getElementById('mainContainer');
+        container.innerHTML = `
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">SPAMLORDY</span>
+                <span class="logo-badge">FORTUNE</span>
+            </div>
 
-        switch (prize.type) {
-            case "ACCESS":
-                UserDao.addAccessMillis(chatId, prize.value * 60_000L);
-                log.info("Added {} minutes access to user {}", prize.value, chatId);
-                return String.format("✅ <b>+%d минут доступа</b> добавлено к вашему аккаунту!", prize.value);
+            <h1>Колесо фортуны</h1>
 
-            case "SLOTS":
-                UserDao.addSlots(chatId, prize.value, 14L * 24 * 60 * 60 * 1000);
-                log.info("Added {} slots for 2 weeks to user {}", prize.value, chatId);
-                return String.format("✅ <b>+%d слота на 2 недели</b> активированы!", prize.value);
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="freeSpins">${canSpin ? '1' : '0'}</div>
+                    <div class="stat-label">Бесплатно</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="extraSpins">${extraSpins}</div>
+                    <div class="stat-label">Дополнительно</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSpins">0</div>
+                    <div class="stat-label">Всего</div>
+                </div>
+            </div>
 
-            case "LOTTERY":
-                log.info("Gave lottery ticket to user {}", chatId);
-                return "🎰 <b>Бесплатная лотерея!</b>\nНажмите «🎰 Лотерея» в профиле и сыграйте бесплатно!";
+            <div class="wheel-wrapper">
+                <div class="pointer-container">
+                    <div class="pointer"></div>
+                </div>
+                <div class="canvas-wrapper" id="canvasWrapper"></div>
+            </div>
 
-            case "EXTRA_SPIN":
-                UserDao.addExtraSpins(chatId, 1, "wheel", 0);
-                log.info("Added 1 extra spin to user {}", chatId);
-                return "✨ <b>+1 дополнительный прокрут!</b> Он уже доступен в колесе фортуны!";
+            <div class="prize-info" id="prizeInfo">
+                <div class="prize-info-main">🎯 Готов крутить?</div>
+                <div class="prize-info-sub">Нажми кнопку и испытай удачу</div>
+            </div>
 
-            case "PROMO":
-                LotteryPrize lotteryPrize = PromoDao.rollLotteryPrize();
-                String promo = PromoDao.createLotteryPromo(lotteryPrize);
-                log.info("Created promo code for user {}: {}", chatId, promo);
-                return String.format("🎟 <b>Промокод на %d грн!</b>\n\n<code>%s</code>\n\nАктивируйте в разделе «🎁 Промокод»",
-                        lotteryPrize.hours, promo);
+            <div class="badges">
+                <div class="badge free" id="freeBadge">
+                    <span>🆓</span>
+                    <span>Бесплатный</span>
+                    <span>${canSpin ? '✅' : '❌'}</span>
+                </div>
+                <div class="badge extra" id="extraBadge">
+                    <span>✨</span>
+                    <span>Доп. прокрутов</span>
+                    <span>${extraSpins}</span>
+                </div>
+            </div>
 
-            case "BALANCE":
-                UserDao.addBalance(chatId, prize.value);
-                log.info("Added {} balance to user {}", prize.value, chatId);
-                return String.format("💰 <b>+%d грн</b> зачислено на ваш баланс!", prize.value);
+            <button class="action-btn" id="spinBtn" onclick="spinWheel()" ${!canSpin && extraSpins <= 0 ? 'disabled' : ''}>
+                ${canSpin ? '🎡 Крутить бесплатно' : (extraSpins > 0 ? `✨ Крутить (осталось ${extraSpins})` : '❌ Нет прокрутов')}
+            </button>
 
-            default:
-                log.error("Unknown prize type: {} for user {}", prize.type, chatId);
-                return "❓ Неизвестный приз. Обратитесь в поддержку.";
-        }
+            <button class="dropdown-btn" onclick="togglePrizes()">
+                <span>📋</span>
+                <span>Все призы</span>
+                <span>▼</span>
+            </button>
+
+            <div class="prizes-grid" id="prizesGrid"></div>
+
+            <button class="back-btn" onclick="closeApp()">
+                ◀️ Назад
+            </button>
+        `;
+
+        // Добавляем canvas в DOM
+        document.getElementById('canvasWrapper').appendChild(canvas);
+        
+        // Заполняем сетку призов
+        fillPrizesGrid();
+        
+        // Загружаем статистику
+        loadStats();
+        
+        // Рисуем колесо
+        drawWheel();
     }
 
-    public void sendHowToGetInfo(long chatId, CallbackQuery cb) {
-        int extraSpins = UserDao.getExtraSpins(chatId);
-        log.info("Sending how-to-get info to user {}, extra spins: {}", chatId, extraSpins);
+    function drawWheel(rotation = 0) {
+        const centerX = 150;
+        const centerY = 150;
+        const radius = 140;
+        const anglePerPrize = (Math.PI * 2) / prizes.length;
 
-        String text = String.format("""
-❓ <b>КАК ПОЛУЧИТЬ ДОПОЛНИТЕЛЬНЫЕ ПРОКРУТЫ</b>
+        ctx.clearRect(0, 0, 300, 300);
 
-<b>1. 🤝 Приглашай друзей</b>
-• 4 приглашённых → <b>+1 прокрут</b>
-• 10 приглашённых → <b>+3 прокрута</b>
-• 20 приглашённых → <b>+5 прокрутов</b>
+        for (let i = 0; i < prizes.length; i++) {
+            const startAngle = i * anglePerPrize + rotation;
+            const endAngle = (i + 1) * anglePerPrize + rotation;
 
-<b>2. 📱 Выполняй миссии</b>
-• TikTok миссия → <b>+1 прокрут</b>
-• Отзыв в канале → <b>+1 прокрут</b>
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.closePath();
 
-<b>3. 💰 Покупай подписку</b>
-• Каждая покупка от 150 грн → <b>+1 прокрут</b>
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+            gradient.addColorStop(0, prizes[i].color);
+            gradient.addColorStop(0.7, adjustColor(prizes[i].color, -30));
+            gradient.addColorStop(1, adjustColor(prizes[i].color, -50));
+            ctx.fillStyle = gradient;
+            ctx.fill();
 
-<b>4. 🎰 Участвуй в конкурсах</b>
-• Еженедельные розыгрыши
-• Специальные ивенты
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
 
-<b>5. 🎁 Следи за новостями</b>
-В канале @SpamlordyChannel1 регулярно проходят акции с дополнительными прокрутами!
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(startAngle + anglePerPrize / 2);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
 
-━━━━━━━━━━━━━━
-🔥 <b>У тебя уже есть:</b> %d доп. прокрутов
-""", extraSpins);
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
 
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        buttons.add(List.of(
-                InlineKeyboardButton.builder()
-                        .text("🎡 НАЗАД К КОЛЕСУ")
-                        .callbackData("WHEEL_MENU")
-                        .build()
-        ));
+            ctx.font = 'bold 10px Montserrat, sans-serif';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillText(prizes[i].emoji + ' ' + prizes[i].displayName, 80, 0);
 
-        InlineKeyboardMarkup keyboard = new InlineKeyboardMarkup();
-        keyboard.setKeyboard(buttons);
+            ctx.restore();
+        }
 
-        if (cb != null) {
-            try {
-                EditMessageText editMsg = EditMessageText.builder()
-                        .chatId(String.valueOf(chatId))
-                        .messageId(cb.getMessage().getMessageId())
-                        .text(text)
-                        .parseMode("HTML")
-                        .replyMarkup(keyboard)
-                        .build();
-                bot.execute(editMsg);
-                log.info("How-to-get info edited for user {}", chatId);
-            } catch (Exception e) {
-                log.error("Error editing message for user {}: {}", chatId, e.getMessage());
-                bot.sendHtml(chatId, text, keyboard);
+        // Центр
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
+        ctx.fillStyle = '#646CFF';
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#646CFF';
+        ctx.fill();
+        
+        ctx.shadowBlur = 0;
+        ctx.font = 'bold 22px Montserrat, sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 6;
+        ctx.fillText('⚡', centerX, centerY);
+    }
+
+    function adjustColor(color, percent) {
+        const num = parseInt(color.replace('#', ''), 16);
+        const r = Math.max(0, Math.min(255, (num >> 16) + percent));
+        const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + percent));
+        const b = Math.max(0, Math.min(255, (num & 0x0000FF) + percent));
+        return '#' + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
+    }
+
+    function fillPrizesGrid() {
+        const grid = document.getElementById('prizesGrid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        prizes.forEach((prize) => {
+            const card = document.createElement('div');
+            card.className = 'prize-card';
+            card.innerHTML = `
+                <div class="prize-color" style="background: ${prize.color};"></div>
+                <span>${prize.emoji} ${prize.displayName}</span>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function togglePrizes() {
+        const grid = document.getElementById('prizesGrid');
+        if (grid) grid.classList.toggle('visible');
+    }
+
+    function loadStats() {
+        try {
+            const saved = localStorage.getItem(`wheel_${userId}`);
+            if (saved) totalSpins = parseInt(saved) || 0;
+            
+            const totalEl = document.getElementById('totalSpins');
+            if (totalEl) totalEl.textContent = totalSpins;
+            
+        } catch (e) {}
+    }
+
+    function saveStats() {
+        try {
+            if (userId) localStorage.setItem(`wheel_${userId}`, totalSpins.toString());
+        } catch (e) {}
+    }
+
+    function spinWheel() {
+        // Проверяем наличие прокрутов ПЕРЕД началом анимации
+        if (!canSpin && extraSpins <= 0) {
+            alert('❌ У вас нет прокрутов!');
+            return;
+        }
+
+        if (hasSpun) {
+            alert('⚠️ Вы уже крутили в этом окне! Закройте и откройте заново.');
+            return;
+        }
+
+        if (isSpinning) return;
+
+        // Определяем тип прокрута
+        if (canSpin) {
+            spinType = 'free';
+        } else if (extraSpins > 0) {
+            spinType = 'extra';
+        } else {
+            return;
+        }
+
+        hasSpun = true;
+        isSpinning = true;
+        
+        const spinBtn = document.getElementById('spinBtn');
+        if (spinBtn) spinBtn.disabled = true;
+
+        const result = getRandomPrize();
+        const startRotation = currentRotation;
+        const targetRotation = result.rotation;
+        const startTime = performance.now();
+        const duration = 4000;
+
+        function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            const easeProgress = 1 - Math.pow(1 - progress, 4);
+            currentRotation = startRotation + (targetRotation - startRotation) * easeProgress;
+
+            drawWheel(currentRotation);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                finishSpin(result);
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    function finishSpin(result) {
+        console.log('🎯 ВЫИГРЫШ:', result.prize.name);
+
+        // Показываем результат
+        const prizeInfo = document.getElementById('prizeInfo');
+        if (prizeInfo) {
+            prizeInfo.innerHTML = `
+                <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
+                <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
+            `;
+        }
+
+        // Отправляем данные в бота
+        const data = {
+            type: spinType,
+            prize: {
+                name: result.prize.name,
+                value: result.prize.value
+            }
+        };
+
+        const jsonData = JSON.stringify(data);
+        console.log('📤 Отправка данных:', jsonData);
+        tg.sendData(jsonData);
+        
+        dataSent = true;
+
+        // Обновляем статистику
+        totalSpins++;
+        const totalEl = document.getElementById('totalSpins');
+        if (totalEl) totalEl.textContent = totalSpins;
+
+        if (spinType === 'free') {
+            canSpin = false;
+            const freeSpinsEl = document.getElementById('freeSpins');
+            if (freeSpinsEl) freeSpinsEl.textContent = '0';
+            
+            const freeBadge = document.getElementById('freeBadge');
+            if (freeBadge) {
+                freeBadge.innerHTML = `
+                    <span>🆓</span>
+                    <span>Бесплатный</span>
+                    <span>❌</span>
+                `;
             }
         } else {
-            bot.sendHtml(chatId, text, keyboard);
+            extraSpins--;
+            const extraSpinsEl = document.getElementById('extraSpins');
+            if (extraSpinsEl) extraSpinsEl.textContent = extraSpins;
+            
+            const extraBadge = document.getElementById('extraBadge');
+            if (extraBadge) {
+                extraBadge.innerHTML = `
+                    <span>✨</span>
+                    <span>Доп. прокрутов</span>
+                    <span>${extraSpins}</span>
+                `;
+            }
         }
+
+        saveStats();
+        isSpinning = false;
     }
-}
+
+    function getRandomPrize() {
+        const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+        let random = Math.random() * totalWeight;
+
+        let sum = 0;
+        for (let i = 0; i < prizes.length; i++) {
+            sum += prizes[i].weight;
+            if (random < sum) {
+                return {
+                    index: i,
+                    prize: prizes[i],
+                    rotation: currentRotation + (Math.PI * 2 * 10) + (i * (Math.PI * 2 / prizes.length))
+                };
+            }
+        }
+        return { index: 0, prize: prizes[0], rotation: currentRotation + Math.PI * 2 * 10 };
+    }
+
+    function getDescription(name) {
+        const desc = {
+            '1 ЧАС': '✅ +60 минут доступа',
+            '2 ЧАСА': '✅ +120 минут доступа',
+            '3 ЧАСА': '✅ +180 минут доступа',
+            '6 ЧАСОВ': '✅ +360 минут доступа',
+            '2 СЛОТА': '✅ +2 слота на 2 недели',
+            'ЛОТЕРЕЯ': '🎰 Билет в лотерею',
+            '+1': '✨ Дополнительный прокрут',
+            'ПРОМО': '🎟 Промокод на 50 грн',
+            '25 ГРН': '💰 25 грн на баланс',
+            '50 ГРН': '💰 50 грн на баланс'
+        };
+        return desc[name] || 'Приз получен!';
+    }
+
+    function closeApp() {
+        tg.close();
+    }
+
+    // Запуск
+    getUrlParams();
+</script>
+</body>
+</html>
