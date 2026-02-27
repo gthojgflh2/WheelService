@@ -995,7 +995,7 @@ function getRandomPrize() {
             const targetRotation =
                 currentRotation +
                 Math.PI * 2 * 10 +
-                (Math.PI * 2 - (i * anglePerPrize) - anglePerPrize / 2);
+              (Math.PI / 2 - (i * anglePerPrize) - anglePerPrize / 2)
 
             return {
                 index: i,
@@ -1039,6 +1039,7 @@ function getRandomPrize() {
 </script>
 </body>
 </html>
+
 
 
 
