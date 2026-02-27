@@ -6,7 +6,7 @@
     <title>Spamlordy | Колесо фортуны</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Все ваши стили без изменений */
+        /* ТВОИ СТИЛИ */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
 
         * {
@@ -625,32 +625,13 @@
             }
         }
 
-        /* Новые стили для таймера */
-        .timer-container {
-            margin: 15px 0;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
+        .blocked-message {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid red;
             border-radius: 30px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-
-        .timer-text {
-            font-size: 48px;
-            font-weight: 900;
-            color: gold;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-            animation: pulse 1s ease infinite;
-        }
-
-        .timer-label {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.8);
-            margin-top: 5px;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            padding: 20px;
+            margin: 20px 0;
+            color: #ff6b6b;
         }
     </style>
 </head>
@@ -693,12 +674,6 @@
         <div class="prize-info-sub">Нажми кнопку и испытай удачу</div>
     </div>
 
-    <!-- Контейнер для таймера (изначально скрыт) -->
-    <div id="timerContainer" class="timer-container" style="display: none;">
-        <div class="timer-text" id="timerDisplay">20</div>
-        <div class="timer-label">секунд до закрытия</div>
-    </div>
-
     <div class="badges">
         <div class="badge free" id="freeBadge">
             <span>🆓</span>
@@ -710,6 +685,10 @@
             <span>Доп. прокрутов</span>
             <span>0</span>
         </div>
+    </div>
+
+    <div id="blockedMessage" style="display: none;" class="blocked-message">
+        ⚠️ У вас нет прокрутов! Закройте окно и откройте заново.
     </div>
 
     <button class="action-btn" id="spinBtn" onclick="spinWheel()">
@@ -746,7 +725,10 @@
     let isSpinning = false;
     let totalSpins = 0;
     let currentRotation = 0;
-    let closeTimer = null; // Для таймера закрытия
+    
+    // 👇 ФЛАГИ ДЛЯ ЗАЩИТЫ
+    let hasSpun = false; // Крутил ли уже в этой сессии
+    let dataSent = false; // Отправлены ли данные
 
     // Призы
     const prizes = [
@@ -864,6 +846,14 @@
             extraSpins = parseInt(params.get('extraSpins') || '0');
             canSpin = canSpinFree;
 
+            console.log('User ID from URL:', userId);
+            console.log('Can spin free:', canSpinFree);
+            console.log('Extra spins:', extraSpins);
+
+            // 👇 СБРАСЫВАЕМ ФЛАГИ ПРИ ЗАГРУЗКЕ
+            hasSpun = false;
+            dataSent = false;
+
             document.getElementById('freeBadge').innerHTML = `
                 <span>🆓</span>
                 <span>Бесплатный</span>
@@ -899,6 +889,18 @@
 
     function updateSpinButton() {
         const btn = document.getElementById('spinBtn');
+        const blockedMsg = document.getElementById('blockedMessage');
+        
+        // 👇 ПРОВЕРЯЕМ, МОЖНО ЛИ КРУТИТЬ
+        if (!canSpin && extraSpins <= 0) {
+            btn.style.display = 'none';
+            blockedMsg.style.display = 'block';
+            return;
+        }
+        
+        btn.style.display = 'block';
+        blockedMsg.style.display = 'none';
+        
         if (canSpin) {
             btn.innerHTML = '🎡 Крутить бесплатно';
             spinType = 'free';
@@ -948,100 +950,65 @@
         return desc[name] || 'Приз получен!';
     }
 
-    // Функция для запуска таймера закрытия
-    function startCloseTimer(seconds) {
-        const timerContainer = document.getElementById('timerContainer');
-        const timerDisplay = document.getElementById('timerDisplay');
-        
-        timerContainer.style.display = 'block';
-        let timeLeft = seconds;
-        timerDisplay.textContent = timeLeft;
-
-        closeTimer = setInterval(() => {
-            timeLeft--;
-            timerDisplay.textContent = timeLeft;
-
-            if (timeLeft <= 0) {
-                clearInterval(closeTimer);
-                tg.close(); // Закрываем приложение
-            }
-        }, 1000);
-    }
-
-function spinWheel() {
-    if (isSpinning) return;
-
-    // Проверяем на клиенте (быстрая проверка)
-    if (spinType === 'free' && !canSpin) {
-        console.log('❌ Бесплатный прокрут уже использован');
-        showError('Бесплатный прокрут уже использован');
-        return;
-    }
-    if (spinType === 'extra' && extraSpins <= 0) {
-        console.log('❌ Нет дополнительных прокрутов');
-        showError('Нет дополнительных прокрутов');
-        return;
-    }
-
-    isSpinning = true;
-    document.getElementById('spinBtn').disabled = true;
-
-    const result = getRandomPrize();
-    const startRotation = currentRotation;
-    const targetRotation = result.rotation;
-    const startTime = performance.now();
-    const duration = 4000;
-
-    function animate(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        const easeProgress = 1 - Math.pow(1 - progress, 4);
-        currentRotation = startRotation + (targetRotation - startRotation) * easeProgress;
-
-        drawWheel(currentRotation);
-
-        if (progress < 1) {
-            requestAnimationFrame(animate);
-        } else {
-            console.log('🎯 ВЫИГРЫШ:', result.prize.name);
-
-            // Показываем результат
+    function spinWheel() {
+        // 👇 БЛОКИРУЕМ ПОВТОРНОЕ КРУЧЕНИЕ
+        if (hasSpun) {
+            console.log('❌ Уже крутили в этой сессии');
             document.getElementById('prizeInfo').innerHTML = `
-                <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
-                <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
+                <div class="prize-info-main">⚠️ Уже крутили!</div>
+                <div class="prize-info-sub">Закройте и откройте колесо заново</div>
             `;
+            return;
+        }
+        
+        if (dataSent) {
+            console.log('❌ Данные уже отправлены');
+            return;
+        }
 
-            // Обновляем статистику на клиенте
-            totalSpins++;
-            document.getElementById('totalSpins').textContent = totalSpins;
+        if (isSpinning) return;
 
-            if (spinType === 'free') {
-                canSpin = false;
-                document.getElementById('freeBadge').innerHTML = `
-                    <span>🆓</span>
-                    <span>Бесплатный</span>
-                    <span>❌</span>
-                `;
-                document.getElementById('freeSpins').textContent = '0';
+        if (spinType === 'free' && !canSpin) {
+            console.log('❌ Бесплатный прокрут уже использован');
+            return;
+        }
+        if (spinType === 'extra' && extraSpins <= 0) {
+            console.log('❌ Нет дополнительных прокрутов');
+            return;
+        }
+
+        // 👇 ПОМЕЧАЕМ, ЧТО ПОЛЬЗОВАТЕЛЬ КРУТИЛ
+        hasSpun = true;
+        isSpinning = true;
+        document.getElementById('spinBtn').disabled = true;
+
+        const result = getRandomPrize();
+        const startRotation = currentRotation;
+        const targetRotation = result.rotation;
+        const startTime = performance.now();
+        const duration = 4000;
+
+        function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            const easeProgress = 1 - Math.pow(1 - progress, 4);
+            currentRotation = startRotation + (targetRotation - startRotation) * easeProgress;
+
+            drawWheel(currentRotation);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
             } else {
-                extraSpins--;
-                document.getElementById('extraBadge').innerHTML = `
-                    <span>✨</span>
-                    <span>Доп. прокрутов</span>
-                    <span>${extraSpins}</span>
+                console.log('🎯 ВЫИГРЫШ:', result.prize.name);
+
+                // Показываем результат
+                document.getElementById('prizeInfo').innerHTML = `
+                    <div class="prize-info-main">🎉 ${result.prize.emoji} ${result.prize.displayName}!</div>
+                    <div class="prize-info-sub">${getDescription(result.prize.name)}</div>
                 `;
-                document.getElementById('extraSpins').textContent = extraSpins;
-            }
 
-            saveStats();
-            updateSpinButton();
-
-            // Добавляем флаг, что прокрут использован
-            sessionStorage.setItem('lastSpin_' + userId, Date.now().toString());
-
-            // Ждем 3 секунды и отправляем данные
-            setTimeout(() => {
+                // 👇 ОТПРАВЛЯЕМ ДАННЫЕ НЕМЕДЛЕННО!
                 const data = {
                     type: spinType,
                     prize: {
@@ -1050,69 +1017,68 @@ function spinWheel() {
                     }
                 };
 
-                // ФИНАЛЬНАЯ ПРОВЕРКА ПЕРЕД ОТПРАВКОЙ
+                const jsonData = JSON.stringify(data);
+                console.log('📤 Отправка данных в бота:', jsonData);
+                tg.sendData(jsonData);
+                
+                // 👇 ПОМЕЧАЕМ, ЧТО ДАННЫЕ ОТПРАВЛЕНЫ
+                dataSent = true;
+
+                // Обновляем статистику на клиенте
+                totalSpins++;
+                document.getElementById('totalSpins').textContent = totalSpins;
+
                 if (spinType === 'free') {
-                    // Дополнительно проверяем на сервере через initData
-                    console.log('Отправка бесплатного прокрута...');
-                } else if (spinType === 'extra') {
-                    if (extraSpins < 0) {
-                        console.error('❌ Ошибка: отрицательное количество прокрутов');
-                        showError('Ошибка синхронизации');
-                        return;
-                    }
+                    canSpin = false;
+                    document.getElementById('freeBadge').innerHTML = `
+                        <span>🆓</span>
+                        <span>Бесплатный</span>
+                        <span>❌</span>
+                    `;
+                    document.getElementById('freeSpins').textContent = '0';
+                } else {
+                    extraSpins--;
+                    document.getElementById('extraBadge').innerHTML = `
+                        <span>✨</span>
+                        <span>Доп. прокрутов</span>
+                        <span>${extraSpins}</span>
+                    `;
+                    document.getElementById('extraSpins').textContent = extraSpins;
                 }
 
-                tg.sendData(JSON.stringify(data));
-                console.log('📤 Data sent after 10 seconds:', data);
-                
+                saveStats();
+                updateSpinButton();
                 isSpinning = false;
-            }, 10000);
+                
+                // 👇 ПОКАЗЫВАЕМ СООБЩЕНИЕ, ЧТО МОЖНО ЗАКРЫТЬ
+                setTimeout(() => {
+                    document.getElementById('prizeInfo').innerHTML += `
+                        <div class="prize-info-sub" style="margin-top: 10px; color: #4CAF50;">
+                            ✅ Приз получен! Можете закрыть окно
+                        </div>
+                    `;
+                }, 1000);
+            }
         }
+
+        requestAnimationFrame(animate);
     }
 
-    requestAnimationFrame(animate);
-}
-
-// Добавляем функцию для показа ошибок
-function showError(message) {
-    document.getElementById('prizeInfo').innerHTML = `
-        <div class="prize-info-main">❌ Ошибка</div>
-        <div class="prize-info-sub">${message}</div>
-    `;
-    
-    setTimeout(() => {
-        document.getElementById('prizeInfo').innerHTML = `
-            <div class="prize-info-main">🎯 Готов крутить?</div>
-            <div class="prize-info-sub">Нажми кнопку и испытай удачу</div>
-        `;
-    }, 3000);
-}
-
-// Добавляем проверку при загрузке страницы
-window.addEventListener('load', function() {
-    // Проверяем, не крутил ли пользователь недавно
-    const lastSpin = sessionStorage.getItem('lastSpin_' + userId);
-    if (lastSpin) {
-        const timeSinceLastSpin = Date.now() - parseInt(lastSpin);
-        if (timeSinceLastSpin < 10000) { // Если прошло меньше 10 секунд
-            console.log('⏳ Подождите перед следующим прокрутом');
-            document.getElementById('spinBtn').disabled = true;
-            
-            setTimeout(() => {
-                document.getElementById('spinBtn').disabled = false;
-                sessionStorage.removeItem('lastSpin_' + userId);
-            }, 10000 - timeSinceLastSpin);
-        } else {
-            sessionStorage.removeItem('lastSpin_' + userId);
-        }
-    }
-});
     function closeApp() {
-        if (closeTimer) {
-            clearInterval(closeTimer);
-        }
         tg.close();
     }
+
+    // Защита от закрытия до отправки
+    window.addEventListener('beforeunload', function(e) {
+        if (hasSpun && !dataSent) {
+            // Пользователь крутил, но данные не отправились
+            console.log('⚠️ Внимание! Данные не отправлены!');
+            // Можно показать предупреждение
+            e.preventDefault();
+            e.returnValue = 'Данные еще не отправлены!';
+            return 'Данные еще не отправлены!';
+        }
+    });
 
     // Запуск
     fillPrizesGrid();
@@ -1123,5 +1089,3 @@ window.addEventListener('load', function() {
 </script>
 </body>
 </html>
-
-
